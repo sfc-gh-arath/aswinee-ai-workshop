@@ -24,6 +24,25 @@ render_technologies_used([
     {"name": "Cortex Search Service", "description": "Managed hybrid search (vector + keyword + reranking). Indexes text and returns semantically relevant results.", "icon": "manage_search"},
 ])
 
+st.markdown("---")
+st.markdown("#### :material/bolt: Quick Setup Option — Pre-built Semantic View")
+with st.container(border=True):
+    st.markdown("""
+If you want to **skip Prompt 6.1** (creating the semantic view from scratch) and use a pre-built one:
+
+1. **Download** the YAML file: [SMARTCAST_ANALYTICS_SV.sv.yaml](https://github.com/sfc-gh-arath/aswinee-ai-workshop/blob/main/vizio_workshop/SMARTCAST_ANALYTICS_SV.sv.yaml)
+   - Click the **Download raw file** button (↓ icon) on the GitHub page
+2. In Snowsight, go to **Projects → Workspaces**
+3. **Upload** the `.sv.yaml` file into your Workspace
+4. Open the file — it will display the semantic view editor
+5. Click **Publish** and select the target location: **VIZIO_ANALYTICS_LAB.AI_OBJECTS**
+6. The semantic view is now live — skip to **Prompt 6.2** to test it
+
+This is faster than having Cortex Code generate the view from scratch.
+""")
+
+st.markdown("---")
+
 
 PROMPT_6_1 = """Create a semantic view called VIZIO_ANALYTICS_LAB.AI_OBJECTS.SMARTCAST_ANALYTICS_SV for use with Cortex Analyst. Cover these tables:
 

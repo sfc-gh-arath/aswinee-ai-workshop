@@ -1,0 +1,261 @@
+name: SMARTCAST_ANALYTICS_SV
+description: 'VIZIO SmartCast platform analytics covering WatchFree+ streaming engagement, device fleet health, and app ecosystem performance. VIZIO sells smart TVs under two brands: VIZIO (premium) and
+  ONN (Walmart budget). Key product lines: V-Series (budget), M-Series (mid-range), P-Series (premium), Quantum (high-end), OLED (flagship). WatchFree+ (WFP) is VIZIO''s free ad-supported streaming service.'
+tables:
+- name: WFP_ENGAGEMENT_DAILY
+  description: 'Unified daily WatchFree+ engagement view joining Global KPIs with Revenue. Includes per-token metrics, revenue efficiency, WoW growth, and 7-day rolling averages. Source: AGG_WFP_GLOBAL_KPIS_ROLLING_30_DAY
+    + AGG_WFP_LIVE_AND_AVOD_REVENUE_ROLLING_30_DAYS.'
+  base_table:
+    database: VIZIO_ANALYTICS_LAB
+    schema: ANALYTICS
+    table: WFP_ENGAGEMENT_DAILY
+  dimensions:
+  - name: BACKEND_APP_TYPE
+    expr: BACKEND_APP_TYPE
+    data_type: VARCHAR
+  time_dimensions:
+  - name: DATE
+    expr: DATE
+    data_type: DATE
+  facts:
+  - name: WFP_VIEWING_HOURS
+    expr: WFP_VIEWING_HOURS
+    data_type: NUMBER
+    synonyms:
+    - watch time
+    - viewing time
+    - hours watched
+  - name: AVOD_VIEWING_HOURS
+    expr: AVOD_VIEWING_HOURS
+    data_type: NUMBER
+  - name: WFP_LIVE_REVENUE
+    expr: WFP_LIVE_REVENUE
+    data_type: NUMBER
+  - name: WFP_AVOD_REVENUE
+    expr: WFP_AVOD_REVENUE
+    data_type: NUMBER
+  - name: TOTAL_REVENUE
+    expr: TOTAL_REVENUE
+    data_type: NUMBER
+    synonyms:
+    - revenue
+    - ad revenue
+    - WFP revenue
+  - name: VIEWING_HOURS_PER_TOKEN
+    expr: VIEWING_HOURS_PER_TOKEN
+    data_type: NUMBER
+  - name: REVENUE_PER_VIEWING_HOUR
+    expr: REVENUE_PER_VIEWING_HOUR
+    data_type: NUMBER
+  - name: SESSIONS_PER_TOKEN
+    expr: SESSIONS_PER_TOKEN
+    data_type: NUMBER
+  - name: WOW_TOKEN_CHANGE_PCT
+    expr: WOW_TOKEN_CHANGE_PCT
+    data_type: NUMBER
+  - name: ROLLING_7DAY_AVG_REVENUE
+    expr: ROLLING_7DAY_AVG_REVENUE
+    data_type: NUMBER
+  - name: WFP_TOKENS
+    expr: WFP_TOKENS
+    data_type: NUMBER
+    synonyms:
+    - viewers
+    - unique viewers
+    - WatchFree users
+    - WFP users
+  - name: AVOD_TOKENS
+    expr: AVOD_TOKENS
+    data_type: NUMBER
+  - name: WFP_SESSIONS
+    expr: WFP_SESSIONS
+    data_type: NUMBER
+  - name: AVOD_SESSIONS
+    expr: AVOD_SESSIONS
+    data_type: NUMBER
+  primary_key:
+    columns:
+    - DATE
+    - BACKEND_APP_TYPE
+- name: DEVICE_HEALTH_SCORECARD
+  description: 'Per-model device health scorecard combining churn metrics (NRC), viewing engagement (Homescreen), and app usage (App Launches). Each subquery uses its own latest period so the view stays
+    current as data grows. Health status: HEALTHY (churn <5% + viewing >60min), AT_RISK (churn 5-10%), CRITICAL (churn >=10% or viewing <20min).'
+  base_table:
+    database: VIZIO_ANALYTICS_LAB
+    schema: ANALYTICS
+    table: DEVICE_HEALTH_SCORECARD
+  dimensions:
+  - name: MODEL_NAME
+    expr: MODEL_NAME
+    data_type: VARCHAR
+  - name: SERIES
+    expr: SERIES
+    data_type: VARCHAR
+    synonyms:
+    - TV series
+    - product line
+    - model line
+  - name: SIZE
+    expr: SIZE
+    data_type: VARCHAR
+  - name: OEM_BRAND
+    expr: OEM_BRAND
+    data_type: VARCHAR
+  - name: HEALTH_STATUS
+    expr: HEALTH_STATUS
+    data_type: VARCHAR
+    synonyms:
+    - device health
+    - model health
+    - risk status
+  facts:
+  - name: GROSS_CHURN_RATE1M
+    expr: GROSS_CHURN_RATE1M
+    data_type: NUMBER
+    synonyms:
+    - churn rate
+    - churn
+    - device churn
+  - name: NET_CHURN1M
+    expr: NET_CHURN1M
+    data_type: NUMBER
+  - name: RETURN_RATE
+    expr: RETURN_RATE
+    data_type: NUMBER
+  - name: AVG_VIEWING_MINUTES
+    expr: AVG_VIEWING_MINUTES
+    data_type: NUMBER
+  - name: MEDIAN_VIEWING_MINUTES
+    expr: MEDIAN_VIEWING_MINUTES
+    data_type: NUMBER
+  - name: AVG_LAUNCHES_PER_DEVICE
+    expr: AVG_LAUNCHES_PER_DEVICE
+    data_type: NUMBER
+  - name: ACTIVE_DEVICES
+    expr: ACTIVE_DEVICES
+    data_type: NUMBER
+    synonyms:
+    - active TVs
+    - active fleet
+    - fleet size
+  - name: NEW_DEVICES
+    expr: NEW_DEVICES
+    data_type: NUMBER
+  - name: CHURNED_1M_DEVICES
+    expr: CHURNED_1M_DEVICES
+    data_type: NUMBER
+  - name: TOTAL_APP_LAUNCHES
+    expr: TOTAL_APP_LAUNCHES
+    data_type: NUMBER
+  - name: DISTINCT_APPS_USED
+    expr: DISTINCT_APPS_USED
+    data_type: NUMBER
+  primary_key:
+    columns:
+    - SERIES
+- name: APP_PERFORMANCE_SUMMARY
+  description: App-level performance summary over the trailing 30 days of available data. Aggregates devices, launches, top source/series, OEM brand share, and joins to app metadata for VOD_TYPE and MONETIZATION_TYPE.
+    Refreshes automatically as new data lands in AGG_APP_DEVICES_LAUNCHES_SOURCES.
+  base_table:
+    database: VIZIO_ANALYTICS_LAB
+    schema: ANALYTICS
+    table: APP_PERFORMANCE_SUMMARY
+  dimensions:
+  - name: LAUNCH_RANK
+    expr: LAUNCH_RANK
+    data_type: NUMBER
+  - name: APP
+    expr: APP
+    data_type: VARCHAR
+    synonyms:
+    - application
+    - streaming app
+    - service
+  - name: VOD_TYPE
+    expr: VOD_TYPE
+    data_type: VARCHAR
+  - name: MONETIZATION_TYPE
+    expr: MONETIZATION_TYPE
+    data_type: VARCHAR
+  - name: TOP_SOURCE
+    expr: TOP_SOURCE
+    data_type: VARCHAR
+  - name: TOP_SERIES
+    expr: TOP_SERIES
+    data_type: VARCHAR
+  facts:
+  - name: LAUNCHES_PER_DEVICE
+    expr: LAUNCHES_PER_DEVICE
+    data_type: NUMBER
+  - name: VIZIO_SHARE_PCT
+    expr: VIZIO_SHARE_PCT
+    data_type: NUMBER
+  - name: TOTAL_DEVICES
+    expr: TOTAL_DEVICES
+    data_type: NUMBER
+  - name: TOTAL_LAUNCHES
+    expr: TOTAL_LAUNCHES
+    data_type: NUMBER
+  primary_key:
+    columns:
+    - APP
+  unique_keys:
+  - columns:
+    - TOP_SERIES
+verified_queries:
+- name: 0;1
+  question: What are the most recent 30 days of WatchFree+ engagement performance including user tokens, revenue, and viewing hours?
+  sql: SELECT DATE, BACKEND_APP_TYPE, WFP_TOKENS, TOTAL_REVENUE, WFP_VIEWING_HOURS FROM wfp_engagement_daily ORDER BY DATE DESC LIMIT 30
+  verified_at: 1791237971
+  verified_by: Semantic Model Generator
+- name: 1;1
+  question: Which device models have the highest churn rates?
+  sql: SELECT MODEL_NAME, SERIES, SIZE, HEALTH_STATUS, GROSS_CHURN_RATE1M, ACTIVE_DEVICES FROM device_health_scorecard ORDER BY GROSS_CHURN_RATE1M DESC
+  verified_at: 1791237971
+  verified_by: Semantic Model Generator
+- name: 2;1
+  question: What are the top performing apps by total launches?
+  sql: SELECT APP, VOD_TYPE, TOTAL_LAUNCHES, LAUNCHES_PER_DEVICE, VIZIO_SHARE_PCT FROM app_performance_summary ORDER BY TOTAL_LAUNCHES DESC
+  verified_at: 1791237971
+  verified_by: Semantic Model Generator
+- name: 3;1
+  question: What is the distribution of device models and active devices across different health status categories?
+  sql: SELECT HEALTH_STATUS, COUNT(*) AS model_count, SUM(ACTIVE_DEVICES) AS total_devices, AVG(GROSS_CHURN_RATE1M) AS avg_churn FROM device_health_scorecard GROUP BY HEALTH_STATUS
+  verified_at: 1791237971
+  verified_by: Semantic Model Generator
+- name: 4;1
+  question: Which apps are popular on device series with high churn rates?
+  sql: SELECT a.APP, a.TOP_SERIES, d.HEALTH_STATUS, d.GROSS_CHURN_RATE1M FROM app_performance_summary AS a JOIN device_health_scorecard AS d ON a.TOP_SERIES = d.SERIES
+  verified_at: 1791237971
+  verified_by: Semantic Model Generator
+relationships:
+- name: device_to_app_by_series
+  left_table: DEVICE_HEALTH_SCORECARD
+  right_table: APP_PERFORMANCE_SUMMARY
+  relationship_columns:
+  - left_column: SERIES
+    right_column: TOP_SERIES
+metrics:
+- name: total_wfp_viewers
+  expr: SUM(WFP_ENGAGEMENT_DAILY.WFP_TOKENS)
+  description: Total WatchFree+ unique viewers (tokens)
+- name: total_wfp_revenue
+  expr: SUM(WFP_ENGAGEMENT_DAILY.TOTAL_REVENUE)
+  description: Total WatchFree+ revenue (live + AVOD combined)
+- name: avg_churn_rate
+  expr: AVG(DEVICE_HEALTH_SCORECARD.GROSS_CHURN_RATE1M)
+  description: Average monthly gross churn rate across device models
+- name: avg_viewing_hours_per_token
+  expr: AVG(WFP_ENGAGEMENT_DAILY.VIEWING_HOURS_PER_TOKEN)
+  description: Average viewing hours per unique viewer (engagement depth)
+- name: total_active_devices
+  expr: SUM(DEVICE_HEALTH_SCORECARD.ACTIVE_DEVICES)
+  description: Total active devices across all models
+- name: all_apps_total_launches
+  expr: SUM(APP_PERFORMANCE_SUMMARY.TOTAL_LAUNCHES)
+  description: Total app launches across all apps in the ecosystem
+module_custom_instructions:
+  sql_generation: 'This is VIZIO SmartCast platform data. VIZIO sells smart TVs under two brands: VIZIO (premium) and ONN (Walmart budget). Key product lines: V-Series (budget), M-Series (mid-range), P-Series
+    (premium), Quantum (high-end), OLED (flagship). WatchFree+ (WFP) is VIZIO''s free ad-supported streaming service with live channels and AVOD content. When asked about ''viewers'' or ''users'', use WFP_TOKENS.
+    When asked about ''health'' or ''risk'', use HEALTH_STATUS from DEVICE_HEALTH_SCORECARD. Churn rate > 5% is concerning; > 10% is critical. WFP_ENGAGEMENT_DAILY is standalone (daily grain, no join to
+    device/app tables). DEVICE_HEALTH_SCORECARD and APP_PERFORMANCE_SUMMARY can be joined on SERIES = TOP_SERIES.'
