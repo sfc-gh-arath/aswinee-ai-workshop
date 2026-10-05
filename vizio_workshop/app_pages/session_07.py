@@ -101,19 +101,46 @@ The Agent calls this when someone asks "How engaged are V-Series users?" — ins
 
 PROMPT_7_2 = """Create a Cortex Agent called VIZIO_ANALYTICS_LAB.AI_OBJECTS.SMARTCAST_AGENT with:
 
-MODEL: 'claude-sonnet-4-6'
+MODEL: Set to AUTO (let Snowflake select the best available model automatically)
 
 TOOLS:
 1. Semantic view VIZIO_ANALYTICS_LAB.AI_OBJECTS.SMARTCAST_ANALYTICS_SV (for Cortex Analyst — structured data)
 2. Cortex Search service VIZIO_ANALYTICS_LAB.AI_OBJECTS.VIZIO_POLICY_SEARCH (for policy/process questions)
 3. UDF VIZIO_ANALYTICS_LAB.AI_OBJECTS.CALCULATE_ENGAGEMENT_SCORE (for engagement scoring)
 
+IMPORTANT — Correct syntax for UDF tools in agent YAML:
+- Do NOT use tool type "function" — that is invalid in the agent spec
+- For UDF-based custom tools, use:
+  - In the tools section: type = "generic" with an input_schema that describes the parameters
+  - In the tool_resources section: type = "function" with the fully qualified function identifier and execution_environment = "sandbox"
+
+Example of correct UDF tool syntax in the agent YAML:
+```
+tools:
+  - tool_type: generic
+    name: calculate_engagement_score
+    description: "Calculates a composite engagement score for a TV series"
+    input_schema:
+      type: object
+      properties:
+        series:
+          type: string
+          description: "TV series name (e.g., V-Series, M-Series, P-Series)"
+      required:
+        - series
+tool_resources:
+  - tool_type: function
+    name: calculate_engagement_score
+    identifier: VIZIO_ANALYTICS_LAB.AI_OBJECTS.CALCULATE_ENGAGEMENT_SCORE
+    execution_environment: sandbox
+```
+
 INSTRUCTIONS: "You are a platform analytics assistant for VIZIO's SmartCast team. You help analysts understand device engagement, WatchFree+ performance, app ecosystem health, and content trends.
 
 Tool routing:
 - For questions about device health, WFP metrics, app performance, churn, revenue, or any data query: use the semantic view (Cortex Analyst)
 - For questions about policies, processes, guidelines, or 'how do we...': use the search service
-- For questions asking about engagement score or health score for a specific TV series: use CALCULATE_ENGAGEMENT_SCORE with the series name
+- For questions asking about engagement score or health score for a specific TV series: use calculate_engagement_score with the series name
 - For complex questions needing both data AND context: use multiple tools and synthesize
 
 Domain context:
@@ -135,25 +162,27 @@ Execute and confirm the agent is created."""
 
 render_prompt("Prompt 7.2", "Create the Cortex Agent", PROMPT_7_2)
 
-render_fallback_sql("Create agent", """-- Use Cortex Code for CREATE AGENT — the syntax is complex
--- The agent needs:
---   MODEL = 'claude-sonnet-4-6'
---   3 TOOLS: semantic view, search service, UDF
---   INSTRUCTIONS with routing guidance
---   SAMPLE_QUESTIONS for CoWork UI
+render_fallback_sql("Create agent", """-- The CREATE AGENT DDL is complex. Key points:
+-- 1. MODEL = 'AUTO' (Snowflake picks the best model)
+-- 2. Semantic view and search tools use their standard types
+-- 3. UDF tools use type "generic" (NOT "function") in the tools section
+--    and type "function" with identifier in tool_resources
 --
+-- Use Cortex Code to generate the full DDL from the prompt above.
 -- Verify after creation:
 SHOW AGENTS IN SCHEMA VIZIO_ANALYTICS_LAB.AI_OBJECTS;""")
 
 render_explanation("What this prompt does", """
 Creates the **capstone** of the entire lab — a multi-tool Cortex Agent:
 
+**Model = AUTO**: Snowflake automatically selects the best available model for the agent. No need to pick a specific model — it adapts as new models become available.
+
 **Three tools, three capabilities**:
 1. **Analyst** (semantic view): Data queries → "how many viewers?", "churn by model?"
 2. **Search** (knowledge base): Policy questions → "what's the firmware update process?"
 3. **UDF** (custom logic): Engagement scoring → "rate the V-Series"
 
-**The INSTRUCTIONS** are critical — they tell the agent how to route questions. Without them, the agent might try to answer a policy question using the semantic view (which would fail).
+**UDF tool syntax gotcha**: Custom function tools use `type: generic` (not `function`) in the tools section, with an `input_schema` describing the parameters. The `tool_resources` section then maps the generic tool to the actual UDF with `type: function` and the fully qualified identifier. Getting this wrong gives the error "Tool type function is not valid."
 
 **SAMPLE_QUESTIONS** appear in CoWork as suggested starting points.
 """)
