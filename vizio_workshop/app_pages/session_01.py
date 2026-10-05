@@ -24,6 +24,24 @@ render_technologies_used([
     {"name": "Synthetic Data", "description": "We populate 11 source tables with realistic data and add customer feedback + policy documents for AI sessions.", "icon": "table_chart"},
 ])
 
+st.markdown("---")
+st.markdown("#### :material/bolt: Quick Setup Option — Pre-built Notebook")
+with st.container(border=True):
+    st.markdown("""
+If you want to **skip the Cortex Code prompts** for data setup and get straight to the analytics sessions, you can use the pre-built setup notebook:
+
+1. **Download** the notebook: [VIZIO_Lab_Setup.ipynb](https://github.com/sfc-gh-arath/aswinee-ai-workshop/blob/main/vizio_workshop/VIZIO_Lab_Setup.ipynb)
+   - Click the **Download raw file** button (↓ icon) on the GitHub page
+2. In Snowsight, go to **Projects → Notebooks**
+3. Click **⋮ menu → Import .ipynb file** and upload the downloaded notebook
+4. Set the notebook warehouse to **VIZIO_LAB_WH** (or any MEDIUM+ warehouse)
+5. Click **Run All** — this creates all databases, tables, and synthetic data in one go
+
+After the notebook finishes, **skip to Session 2** (Data Discovery). The notebook handles everything in Prompts 1.1, 1.2, and 1.3.
+""")
+
+st.markdown("---")
+
 
 PROMPT_1_1 = """Create the VIZIO source databases and tables for this lab. We need two databases focused on WatchFree+ Streaming and Device/TV Analytics.
 
