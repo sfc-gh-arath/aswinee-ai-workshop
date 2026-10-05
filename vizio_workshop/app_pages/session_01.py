@@ -35,10 +35,10 @@ If you want to **skip the Cortex Code prompts** for data setup and get straight 
 2. In Snowsight, go to **Projects → Workspaces**
 3. Open your Workspace (or create one if needed)
 4. **Upload** the downloaded `.ipynb` file into your Workspace
-5. Open the notebook and set the warehouse to **VIZIO_LAB_WH** (or any MEDIUM+ warehouse)
-6. Click **Run All** — this creates all databases, tables, and synthetic data in one go
-
-:material/info: **First-time notebook users**: If this is your first time running a notebook in this account, Snowsight may prompt you to **create a Notebook Service**. Follow the on-screen instructions to provision it — this is a one-time setup that takes a minute or two.
+5. Open the notebook — it will prompt you to **connect to a Notebook Service**
+   - Select an existing service, or create a new one if none exists
+   - :material/info: **First-time setup**: Creating a Notebook Service takes a minute or two. This is a one-time step for the account.
+6. Once connected to the service, click **Run All** — this creates all databases, tables, and synthetic data in one go
 
 After the notebook finishes, **skip to Session 2** (Data Discovery). The notebook handles everything in Prompts 1.1, 1.2, and 1.3.
 """)
