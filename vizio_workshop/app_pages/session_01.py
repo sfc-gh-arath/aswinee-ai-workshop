@@ -32,10 +32,13 @@ If you want to **skip the Cortex Code prompts** for data setup and get straight 
 
 1. **Download** the notebook: [VIZIO_Lab_Setup.ipynb](https://github.com/sfc-gh-arath/aswinee-ai-workshop/blob/main/vizio_workshop/VIZIO_Lab_Setup.ipynb)
    - Click the **Download raw file** button (↓ icon) on the GitHub page
-2. In Snowsight, go to **Projects → Notebooks**
-3. Click **⋮ menu → Import .ipynb file** and upload the downloaded notebook
-4. Set the notebook warehouse to **VIZIO_LAB_WH** (or any MEDIUM+ warehouse)
-5. Click **Run All** — this creates all databases, tables, and synthetic data in one go
+2. In Snowsight, go to **Projects → Workspaces**
+3. Open your Workspace (or create one if needed)
+4. **Upload** the downloaded `.ipynb` file into your Workspace
+5. Open the notebook and set the warehouse to **VIZIO_LAB_WH** (or any MEDIUM+ warehouse)
+6. Click **Run All** — this creates all databases, tables, and synthetic data in one go
+
+:material/info: **First-time notebook users**: If this is your first time running a notebook in this account, Snowsight may prompt you to **create a Notebook Service**. Follow the on-screen instructions to provision it — this is a one-time setup that takes a minute or two.
 
 After the notebook finishes, **skip to Session 2** (Data Discovery). The notebook handles everything in Prompts 1.1, 1.2, and 1.3.
 """)
