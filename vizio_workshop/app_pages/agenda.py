@@ -11,7 +11,7 @@ schedule = [
     ("Session 2", "Data Discovery", "15 min", "Explore data with Cortex Code — profiling, relationships, patterns"),
     ("Session 3", "Analytics-Ready Views", "20 min", "WFP engagement, device health scorecard, app performance summary"),
     ("Session 4", "Dynamic Tables", "20 min", "Auto-refreshing churn signals and content trend tracker"),
-    ("Session 5", "Cortex LLM Functions", "20 min", "Sentiment, topic classification, feature extraction on feedback"),
+    ("Session 5", "Cortex AI Functions", "20 min", "AI_SENTIMENT, AI_CLASSIFY, AI_EXTRACT on customer feedback"),
     ("Session 6", "Semantic View & Search", "20 min", "Natural language to SQL + knowledge base over policies"),
     ("Session 7", "Cortex Agent & CoWork", "15 min", "Multi-tool agent for conversational BI in Snowsight"),
 ]
@@ -67,7 +67,7 @@ with st.container(border=True):
 | Cortex Code for discovery | 2 |
 | Views with business logic | 3 |
 | Dynamic Tables (auto-refresh) | 4 |
-| Cortex LLM Functions | 5 |
+| Cortex AI Functions | 5 |
 | Semantic View + Cortex Analyst | 6 |
 | Cortex Search (hybrid) | 6 |
 | Cortex Agent + CoWork | 7 |

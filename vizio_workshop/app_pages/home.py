@@ -54,7 +54,7 @@ with st.container(border=True):
 | **2. Data Discovery** | Explore streaming and device databases with Cortex Code |
 | **3. Analytics Views** | WFP engagement, device health scorecard, app performance |
 | **4. Dynamic Tables** | Auto-refreshing churn signals and content trend tracker |
-| **5. Cortex LLM Functions** | Sentiment, topic classification, feature extraction on customer feedback |
+| **5. Cortex AI Functions** | AI_SENTIMENT, AI_CLASSIFY, AI_EXTRACT on customer feedback |
 | **6. Semantic View + Search** | Natural language queries + knowledge base over policies |
 | **7. Cortex Agent & CoWork** | Multi-tool agent for conversational BI |
 """)

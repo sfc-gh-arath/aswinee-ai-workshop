@@ -152,7 +152,7 @@ PROMPT_6_3 = """Now create a Cortex Search service for the knowledge base.
    - "viewer privacy and data collection policies"
    - Search for "advertising" filtered to category = 'advertising'
 
-3. Build a quick RAG query: use CORTEX.SEARCH_PREVIEW() to find the top 3 documents about "ACR opt-out policy", then pass them to CORTEX.COMPLETE('claude-sonnet-5') to generate a grounded answer.
+3. Build a quick RAG query: use CORTEX.SEARCH_PREVIEW() to find the top 3 documents about "ACR opt-out policy", then pass them to AI_COMPLETE('claude-sonnet-5', ...) to generate a grounded answer.
 
 Show results for each."""
 

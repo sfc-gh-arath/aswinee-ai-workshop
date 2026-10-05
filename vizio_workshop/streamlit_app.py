@@ -39,7 +39,7 @@ page = st.navigation(
             st.Page("app_pages/session_04.py", title=_title(4, "Dynamic Tables"), icon=":material/autorenew:"),
         ],
         "AI & Conversational BI": [
-            st.Page("app_pages/session_05.py", title=_title(5, "Cortex LLM Functions"), icon=":material/psychology:"),
+            st.Page("app_pages/session_05.py", title=_title(5, "Cortex AI Functions"), icon=":material/psychology:"),
             st.Page("app_pages/session_06.py", title=_title(6, "Semantic View & Search"), icon=":material/chat:"),
             st.Page("app_pages/session_07.py", title=_title(7, "Cortex Agent & CoWork"), icon=":material/smart_toy:"),
         ],
