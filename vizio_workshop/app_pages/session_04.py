@@ -8,6 +8,7 @@ from components import (
     render_key_concepts,
     render_domain_glossary,
     render_what_you_built,
+    render_what_you_will_build,
 )
 
 render_session_header(
@@ -22,6 +23,12 @@ render_technologies_used([
     {"name": "Dynamic Tables", "description": "Snowflake objects that automatically refresh their contents based on a declarative SQL query and a target lag. Define WHAT you want; Snowflake handles WHEN and HOW to refresh.", "icon": "autorenew"},
     {"name": "TARGET_LAG", "description": "Maximum staleness you'll accept. '1 hour' means the table is never more than 1 hour behind source data. DOWNSTREAM means it refreshes when upstream refreshes.", "icon": "timer"},
     {"name": "Pipeline Chaining", "description": "Dynamic tables can reference other dynamic tables, forming a DAG. Snowflake manages refresh order automatically.", "icon": "bolt"},
+])
+
+render_what_you_will_build([
+    "DT_CHURN_RISK_SIGNALS — auto-refreshing table flagging device models with deteriorating health",
+    "DT_CONTENT_TREND_TRACKER — genre-level content trend classification (surging to falling)",
+    "Verified the pipeline: refresh status, risk distributions, and content trends",
 ])
 
 

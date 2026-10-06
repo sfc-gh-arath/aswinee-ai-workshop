@@ -5,6 +5,17 @@ st.markdown("2-hour hands-on lab schedule")
 
 st.space("small")
 
+PAGE_MAP = {
+    "": "app_pages/getting_started.py",
+    "Session 1": "app_pages/session_01.py",
+    "Session 2": "app_pages/session_02.py",
+    "Session 3": "app_pages/session_03.py",
+    "Session 4": "app_pages/session_04.py",
+    "Session 5": "app_pages/session_05.py",
+    "Session 6": "app_pages/session_06.py",
+    "Session 7": "app_pages/session_07.py",
+}
+
 schedule = [
     ("", "Getting Started", "5 min", "Account access, Cortex Code, cross-region inference"),
     ("Session 1", "Foundation & Data Setup", "15 min", "2 source databases, 11 tables, analytics workspace, customer feedback"),
@@ -22,9 +33,17 @@ for session, title, duration, description in schedule:
     with st.container(border=True):
         col1, col2, col3 = st.columns([1, 2, 4])
         with col1:
-            st.markdown(f"**{session}**" if session else ":material/rocket_launch:")
+            if session:
+                st.markdown(f"**{session}**")
+            else:
+                st.markdown(":material/rocket_launch:")
         with col2:
-            st.markdown(f"**{title}** ({duration})")
+            label = f"{session}: {title}" if session else title
+            page_path = PAGE_MAP.get(session, "")
+            if page_path:
+                st.page_link(page_path, label=f"**{title}** ({duration})")
+            else:
+                st.markdown(f"**{title}** ({duration})")
         with col3:
             st.caption(description)
 

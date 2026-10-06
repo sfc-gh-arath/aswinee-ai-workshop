@@ -8,6 +8,7 @@ from components import (
     render_key_concepts,
     render_domain_glossary,
     render_what_you_built,
+    render_what_you_will_build,
 )
 
 render_session_header(
@@ -22,6 +23,12 @@ render_technologies_used([
     {"name": "AI_SENTIMENT()", "description": "Analyzes text and returns a sentiment score from -1 (negative) to +1 (positive). Works directly in SQL on any text column.", "icon": "thumb_up"},
     {"name": "AI_CLASSIFY()", "description": "Classifies text into user-defined categories using a managed model. No prompt engineering needed — just provide the text and the category list.", "icon": "label"},
     {"name": "AI_EXTRACT()", "description": "Extracts structured information (entities, fields) from text. Returns a JSON object with the extracted values. Supports multiple languages.", "icon": "data_object"},
+])
+
+render_what_you_will_build([
+    "Sentiment analysis with AI_SENTIMENT across all device series with star-rating correlation",
+    "Topic classification with AI_CLASSIFY into 10 VIZIO-specific categories",
+    "Structured feature extraction with AI_EXTRACT — fields, competitors, frustration levels",
 ])
 
 

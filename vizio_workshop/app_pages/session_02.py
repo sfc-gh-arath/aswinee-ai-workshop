@@ -8,6 +8,7 @@ from components import (
     render_key_concepts,
     render_domain_glossary,
     render_what_you_built,
+    render_what_you_will_build,
 )
 
 render_session_header(
@@ -22,6 +23,12 @@ render_technologies_used([
     {"name": "Cortex Code", "description": "Snowflake's AI coding assistant. Ask natural language questions about your data and it generates + executes SQL. The primary discovery tool.", "icon": "psychology"},
     {"name": "Cross-Database Queries", "description": "Snowflake can query across databases in a single statement using fully qualified names (DATABASE.SCHEMA.TABLE). Essential when data spans multiple databases.", "icon": "join_inner"},
     {"name": "Data Profiling", "description": "Techniques for understanding distributions: COUNT DISTINCT, NULL rates, MIN/MAX, date ranges. Essential before building analytics.", "icon": "analytics"},
+])
+
+render_what_you_will_build([
+    "Data catalog across both databases — tables, row counts, join keys",
+    "Data quality report identifying issues and validating ranges",
+    "Business pattern analysis: top channels, revenue trends, series performance, content preferences",
 ])
 
 

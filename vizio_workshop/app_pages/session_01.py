@@ -8,6 +8,7 @@ from components import (
     render_key_concepts,
     render_domain_glossary,
     render_what_you_built,
+    render_what_you_will_build,
 )
 
 render_session_header(
@@ -22,6 +23,14 @@ render_technologies_used([
     {"name": "Source Databases", "description": "Two VIZIO databases: VIZIO_STREAMING (WatchFree+ live/AVOD, KPIs, revenue, studios) and VIZIO_DEVICES (TV fleet, homescreen, NRC churn, app launches, OEM).", "icon": "database"},
     {"name": "Virtual Warehouses", "description": "Named compute clusters. We create a MEDIUM warehouse for this lab. Auto-suspends when idle.", "icon": "memory"},
     {"name": "Synthetic Data", "description": "We populate 11 source tables with realistic data and add customer feedback + policy documents for AI sessions.", "icon": "table_chart"},
+])
+
+render_what_you_will_build([
+    "VIZIO_STREAMING database — 5 WatchFree+ tables with synthetic data",
+    "VIZIO_DEVICES database — 6 device/TV analytics tables with synthetic data",
+    "VIZIO_ANALYTICS_LAB database with ANALYTICS and AI_OBJECTS schemas",
+    "VIZIO_LAB_WH warehouse (MEDIUM size)",
+    "CUSTOMER_FEEDBACK table (150 reviews) and VIZIO_KNOWLEDGE_BASE (40 policy docs)",
 ])
 
 st.markdown("---")

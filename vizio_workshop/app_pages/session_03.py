@@ -8,6 +8,7 @@ from components import (
     render_key_concepts,
     render_domain_glossary,
     render_what_you_built,
+    render_what_you_will_build,
 )
 
 render_session_header(
@@ -22,6 +23,12 @@ render_technologies_used([
     {"name": "CREATE VIEW", "description": "A named SQL query stored in Snowflake. Views don't store data — they compute on-the-fly. Ideal for joining across databases and applying business logic.", "icon": "view_quilt"},
     {"name": "Cross-Database Joins", "description": "Snowflake views can reference tables from any database. We join STREAMING + DEVICES + REVENUE + ENGAGEMENT in a single view.", "icon": "join_inner"},
     {"name": "Window Functions", "description": "LAG, rolling averages, and rankings computed across partitions. Essential for trend analysis and period-over-period comparisons.", "icon": "window"},
+])
+
+render_what_you_will_build([
+    "WFP_ENGAGEMENT_DAILY — unified WatchFree+ daily KPIs with revenue and trend calculations",
+    "DEVICE_HEALTH_SCORECARD — per-model health status: churn, engagement, app usage",
+    "APP_PERFORMANCE_SUMMARY — per-app metrics with discovery source and metadata enrichment",
 ])
 
 

@@ -8,6 +8,7 @@ from components import (
     render_key_concepts,
     render_domain_glossary,
     render_what_you_built,
+    render_what_you_will_build,
 )
 
 render_session_header(
@@ -22,6 +23,13 @@ render_technologies_used([
     {"name": "Cortex Agent", "description": "An AI orchestrator that routes questions to the right tool: Analyst for structured data, Search for policies, custom UDFs for calculations.", "icon": "smart_toy"},
     {"name": "CREATE AGENT", "description": "DDL to define an agent with: model (LLM), tools (what it can use), instructions (routing logic and domain context), sample_questions (CoWork UI).", "icon": "engineering"},
     {"name": "CoWork", "description": "The conversational BI interface in Snowsight where agents live. Users type questions and get answers — no SQL required.", "icon": "forum"},
+])
+
+render_what_you_will_build([
+    "CALCULATE_ENGAGEMENT_SCORE UDF — composite scoring tool for the agent",
+    "SMARTCAST_AGENT — multi-tool Cortex Agent with Analyst + Search + UDF",
+    "Test all tool routes: structured, policy, scoring, and multi-tool queries",
+    "Access the agent via CoWork for conversational BI",
 ])
 
 

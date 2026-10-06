@@ -56,7 +56,7 @@ def render_prompt(prompt_id: str, title: str, prompt_text: str):
 
 
 def render_fallback_sql(title: str, sql_text: str):
-    with st.expander(f":material/bolt: Fallback SQL — {title}", expanded=False):
+    with st.expander(f":material/bolt: Optional: Fallback SQL instead of the prompt — {title}", expanded=False):
         st.caption("If short on time, run this SQL directly in a worksheet instead of using the prompt above")
         st.code(sql_text, language="sql", wrap_lines=True)
 
@@ -109,6 +109,13 @@ def render_domain_glossary(terms: list[dict]):
     for term in terms:
         with st.expander(f"**{term['term']}**"):
             st.markdown(term["definition"])
+
+
+def render_what_you_will_build(items: list[str]):
+    st.markdown("##### :material/flag: What you will build in this session")
+    for item in items:
+        st.markdown(f"- :blue-badge[Goal] {item}")
+    st.space("small")
 
 
 def render_what_you_built(items: list[str]):

@@ -8,6 +8,7 @@ from components import (
     render_key_concepts,
     render_domain_glossary,
     render_what_you_built,
+    render_what_you_will_build,
 )
 
 render_session_header(
@@ -22,6 +23,13 @@ render_technologies_used([
     {"name": "Semantic View", "description": "A first-class Snowflake object that describes data in business terms: tables, relationships, facts, dimensions, metrics, synonyms. The bridge between natural language and SQL.", "icon": "description"},
     {"name": "Cortex Analyst", "description": "Snowflake's text-to-SQL engine. Converts natural language questions into SQL using the semantic view for context.", "icon": "chat"},
     {"name": "Cortex Search Service", "description": "Managed hybrid search (vector + keyword + reranking). Indexes text and returns semantically relevant results.", "icon": "manage_search"},
+])
+
+render_what_you_will_build([
+    "SMARTCAST_ANALYTICS_SV semantic view with VIZIO-specific synonyms and AI instructions",
+    "Test 5 natural language queries via Cortex Analyst",
+    "VIZIO_POLICY_SEARCH Cortex Search service over the knowledge base",
+    "RAG pipeline: search + context + grounded LLM answer",
 ])
 
 st.markdown("---")

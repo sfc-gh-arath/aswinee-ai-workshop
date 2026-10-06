@@ -22,8 +22,12 @@ st.space("small")
 st.markdown("#### Step 2: Open Cortex Code")
 with st.container(border=True):
     st.markdown("""
-Once logged in to Snowsight, open **Cortex Code** from the left navigation panel.
-Confirm you are using the **ACCOUNTADMIN** role.
+Once logged in to Snowsight, open **Cortex Code (CoCo)** from the **right side** of the navigation bar.
+Look for the **blue sparkle icon** (✦) in the top-right corner of Snowsight — click it to open or move the CoCo panel.
+
+> :material/info: The icon looks like a **blue square with a white sparkle (✦)** and has the tooltip **"Open or move CoCo"**.
+
+Confirm you are using the **ACCOUNTADMIN** role — you can check and switch roles in the bottom-left of the Snowsight UI.
 """)
 
 st.space("small")
