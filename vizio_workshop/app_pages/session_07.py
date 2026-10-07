@@ -202,7 +202,7 @@ with st.container(border=True):
     st.markdown("""
 After the agent is created, you need to **publish it** to make it available in CoWork:
 
-1. In Snowsight, go to **AI & ML → Cortex Agents** (or search for "Agents" in the left nav)
+1. In Snowsight, go to **AI & ML → Agent Studio**
 2. Find **SMARTCAST_AGENT** in the list under `VIZIO_ANALYTICS_LAB.AI_OBJECTS`
 3. Click on the agent to open its detail page
 4. Click **Publish** — this makes the agent available in CoWork
