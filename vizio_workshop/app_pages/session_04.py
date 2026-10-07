@@ -232,6 +232,16 @@ Validates that the dynamic table pipeline is working correctly and the business 
 """)
 
 
+st.markdown("---")
+st.markdown("##### :material/star: Pro Tip: Visualize Your Dynamic Table Lineage")
+with st.container(border=True):
+    st.markdown("""
+Navigate to **Snowsight → Catalog** and find your dynamic table (e.g., `DT_CHURN_RISK_SIGNALS`).
+Click on the **Lineage** tab to see a visual graph of how data flows from source tables through your
+dynamic table pipeline. This is a great way to understand and communicate the data dependencies
+you've just built.
+""")
+
 render_key_concepts([
     {"term": "Dynamic Table", "definition": "A Snowflake object defined by a SELECT query and a TARGET_LAG. Automatically materializes and incrementally refreshes results. Combines view freshness with table performance."},
     {"term": "DOWNSTREAM lag", "definition": "The dynamic table refreshes whenever its upstream sources change. No explicit schedule — Snowflake manages the dependency chain automatically."},

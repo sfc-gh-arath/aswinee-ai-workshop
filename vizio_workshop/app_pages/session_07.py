@@ -28,8 +28,9 @@ render_technologies_used([
 render_what_you_will_build([
     "CALCULATE_ENGAGEMENT_SCORE UDF — composite scoring tool for the agent",
     "SMARTCAST_AGENT — multi-tool Cortex Agent with Analyst + Search + UDF",
+    "Publish the agent and use it in CoWork for conversational BI",
     "Test all tool routes: structured, policy, scoring, and multi-tool queries",
-    "Access the agent via CoWork for conversational BI",
+    "Generate visualizations (charts) through conversational questions in CoWork",
 ])
 
 
@@ -195,6 +196,23 @@ Creates the **capstone** of the entire lab — a multi-tool Cortex Agent:
 **SAMPLE_QUESTIONS** appear in CoWork as suggested starting points.
 """)
 
+st.markdown("---")
+st.markdown("#### :material/publish: Publishing the Agent to CoWork")
+with st.container(border=True):
+    st.markdown("""
+After the agent is created, you need to **publish it** to make it available in CoWork:
+
+1. In Snowsight, go to **AI & ML → Cortex Agents** (or search for "Agents" in the left nav)
+2. Find **SMARTCAST_AGENT** in the list under `VIZIO_ANALYTICS_LAB.AI_OBJECTS`
+3. Click on the agent to open its detail page
+4. Click **Publish** — this makes the agent available in CoWork
+5. To access it: click **CoWork** in the Snowsight left navigation panel
+6. In CoWork, select **SMARTCAST_AGENT** from the agent dropdown at the top
+7. Start typing questions — the agent handles tool selection automatically
+
+:material/info: **Permissions**: Other users need USAGE on the agent and its underlying tools (semantic view, search service, UDF) to use it in CoWork. For this lab, ACCOUNTADMIN has full access.
+""")
+
 
 PROMPT_7_3 = """Test the SMARTCAST_AGENT:
 
@@ -205,11 +223,17 @@ PROMPT_7_3 = """Test the SMARTCAST_AGENT:
 
 Use SNOWFLAKE.CORTEX.DATA_AGENT_RUN() to test each.
 
-Then open CoWork in Snowsight and try asking conversationally:
+Then open CoWork in Snowsight (left nav → CoWork → select SMARTCAST_AGENT) and try these conversational questions:
 - "How's the platform doing today?"
 - "Anything I should worry about?"
 
-Show me how to access the agent in CoWork."""
+Now try questions that generate visualizations in CoWork:
+- "Show me a bar chart of churn rate by TV series"
+- "Chart the WFP viewing hours trend over the last 6 months"
+- "Compare app launches across the top 10 apps as a bar chart"
+- "Show me a breakdown of device health status as a pie chart"
+
+CoWork can generate charts automatically when the question implies a visual. Try asking for specific chart types (bar, line, pie) to see how the agent responds."""
 
 render_prompt("Prompt 7.3", "Test the Agent & CoWork", PROMPT_7_3)
 
@@ -234,9 +258,12 @@ The **culmination** of the lab — testing all three tools through a single inte
 1. **Structured → Analyst**: Generates SQL from the semantic view
 2. **Policy → Search**: Retrieves and synthesizes from the knowledge base
 3. **Scoring → UDF**: Calls the custom function
-4. **Multi-tool**: The most impressive — combines all three for a comprehensive answer about V-Series 32"
+4. **Multi-tool**: Combines all three for a comprehensive answer about V-Series 32"
+5. **Visualizations**: CoWork can generate bar charts, line charts, and pie charts when asked
 
-**CoWork** is the production experience: analysts open Snowsight, click CoWork, type a question, and get an answer. No SQL knowledge required. The agent handles tool selection and synthesis.
+**Accessing CoWork**: Snowsight left nav → **CoWork** → select **SMARTCAST_AGENT** from the dropdown. Type questions naturally — the agent handles everything.
+
+**Visualization tips**: When you ask for a "chart" or "trend" or "comparison," CoWork will render the data as a visual. Try specifying chart types ("bar chart of...") or let CoWork pick automatically ("show me the trend of...").
 """)
 
 
@@ -254,6 +281,7 @@ render_domain_glossary([
 render_what_you_built([
     "CALCULATE_ENGAGEMENT_SCORE UDF — composite scoring tool for the agent",
     "SMARTCAST_AGENT — multi-tool Cortex Agent with Analyst + Search + UDF",
+    "Published the agent and accessed it via CoWork",
     "Tested all tool routes: structured, policy, scoring, and multi-tool queries",
-    "Accessed the agent via CoWork for conversational BI",
+    "Generated visualizations (bar charts, line charts) through conversational questions",
 ])

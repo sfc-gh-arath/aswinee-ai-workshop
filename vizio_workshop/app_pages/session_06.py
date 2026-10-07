@@ -43,8 +43,8 @@ If you want to **skip Prompt 6.1** (creating the semantic view from scratch) and
 2. In Snowsight, go to **Projects → Workspaces**
 3. **Upload** the `.sv.yaml` file into your Workspace
 4. Open the file — it will display the semantic view editor
-5. Click **Publish** and select the target location: **VIZIO_ANALYTICS_LAB.AI_OBJECTS**
-6. The semantic view is now live — skip to **Prompt 6.2** to test it
+5. Click **Publish**, use the name **SMARTCAST_ANALYTICS_SV** and select the target location: **VIZIO_ANALYTICS_LAB.AI_OBJECTS**
+6. The semantic view is now live — **move to Prompt 6.2 to continue the lab**
 
 This is faster than having Cortex Code generate the view from scratch.
 """)
@@ -119,6 +119,18 @@ Creates a **semantic view** that maps VIZIO's data to business language:
 **AI_SQL_GENERATION** provides context the column names don't convey: what "V-Series" means, that WFP is an ad-supported service, what churn thresholds are concerning.
 """)
 
+
+st.markdown("---")
+st.markdown("##### :material/star: Pro Tip: Semantic View Suggestions & Playground")
+with st.container(border=True):
+    st.markdown("""
+After publishing the semantic view, check the **Suggestions** panel in the Semantic View editor —
+Snowflake may recommend additional metrics, synonyms, or relationships to improve coverage.
+
+You can also use the **Playground** area (right side of the Semantic View editor) to test the
+natural language questions from the next prompt interactively — type a question and see the
+generated SQL and results in real time, before running it through Cortex Code.
+""")
 
 PROMPT_6_2 = """Test Cortex Analyst with these questions using VIZIO_ANALYTICS_LAB.AI_OBJECTS.SMARTCAST_ANALYTICS_SV:
 

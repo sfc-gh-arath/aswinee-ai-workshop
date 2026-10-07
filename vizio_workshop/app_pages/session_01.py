@@ -44,10 +44,10 @@ If you want to **skip the Cortex Code prompts** for data setup and get straight 
 2. In Snowsight, go to **Projects → Workspaces**
 3. Open your Workspace (or create one if needed)
 4. **Upload** the downloaded `.ipynb` file into your Workspace
-5. Open the notebook — it will prompt you to **connect to a Notebook Service**
+5. Open the notebook and click **Run All** — it will prompt you to **connect to a Notebook Service**
    - Select an existing service, or create a new one if none exists
    - :material/info: **First-time setup**: Creating a Notebook Service takes a minute or two. This is a one-time step for the account.
-6. Once connected to the service, click **Run All** — this creates all databases, tables, and synthetic data in one go
+6. Follow the output of each cell to see all databases, tables, and synthetic data being created
 
 After the notebook finishes, **skip to Session 2** (Data Discovery). The notebook handles everything in Prompts 1.1, 1.2, and 1.3.
 """)
