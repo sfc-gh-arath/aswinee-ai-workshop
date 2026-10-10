@@ -8,7 +8,7 @@ st.space("small")
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Annual revenue", "$2B+", help="Annual retail revenue across all channels")
 col2.metric("Sessions", "14", help="Hands-on lab sessions")
-col3.metric("Prompts", "~40", help="Total Cortex Code prompts")
+col3.metric("Prompts", "~44", help="Total Cortex Code prompts, each with optional fallback SQL")
 col4.metric("Duration", "~6 hrs", help="Total hands-on content time")
 
 st.space("medium")
@@ -21,6 +21,9 @@ Cortex Code interprets your natural language instruction and executes the approp
 SQL, Python, or configuration against your Snowflake account.
 
 All prompts build on each other sequentially — run them in order throughout the day.
+
+**Short on time?** Every prompt has an **Optional: Fallback SQL** section with pre-built, tested SQL.
+Paste it into a Snowsight worksheet and run it to catch up, then continue with the next prompt.
 """)
 
 st.space("small")
@@ -74,16 +77,16 @@ Throughout this workshop, we build a complete AI-powered retail operations platf
 We train ML models to predict which SKU-store combinations will run out of stock within the next 7 days, using features like current inventory levels, trailing sales velocity, seasonality, and promotion schedules. The best model is registered in Snowflake's Model Registry and deployed as a SQL function. A Dynamic Table continuously re-scores as new sales data arrives, giving the supply chain team a live stockout risk feed.
 
 **Understanding customer sentiment and product feedback** (Sessions 6-9)
-Retailers generate enormous volumes of unstructured data: product reviews, support chat transcripts, supplier contract terms, and marketing briefs. We use Cortex LLM functions to analyze review sentiment, extract product defect themes from support tickets, build a searchable knowledge base over customer feedback, and create vector embeddings for semantic product search. This transforms scattered feedback into actionable product intelligence.
+Retailers generate enormous volumes of unstructured data: product reviews, support chat transcripts, supplier contract terms, and marketing briefs. We use Cortex AI functions (AI_SENTIMENT, AI_CLASSIFY, AI_EXTRACT, AI_COMPLETE and more) to analyze review sentiment, extract product defect themes from support tickets, build a searchable knowledge base over customer feedback, and create vector embeddings for semantic product search. This transforms scattered feedback into actionable product intelligence.
 
 **Natural language access to retail data** (Sessions 10-11)
 Store managers and buyers shouldn't need SQL to answer questions like "What were the top-selling sneakers last weekend?" or "Which stores have excess winter inventory?" We build a Semantic View over eight operational tables and connect it to Cortex Analyst for text-to-SQL. Then we build a Cortex Agent that combines structured sales queries with customer feedback search — a single assistant that can answer both "What is our sell-through rate on Summit activewear?" and "What are customers saying about the new Basecamp hoodie quality?"
 
-**A retail dashboard accessible to everyone** (Session 12)
-We deploy a Streamlit app inside Snowflake with live KPIs, store performance maps, a chat interface powered by Cortex, and a customer feedback tracker. Because it runs on Snowflake's container runtime, it inherits all the security policies we set up earlier — masking sensitive cost data, restricting access by role — without any additional configuration.
+**Retail apps accessible to everyone** (Session 12)
+We deploy a Streamlit app inside Snowflake with live KPIs, store performance maps, a chat interface powered by Cortex, and a customer feedback tracker. Because it runs on Snowflake's container runtime, it inherits all the security policies we set up earlier — masking sensitive cost data, restricting access by role — without any additional configuration. Then we use Cortex Code to build and deploy a React (Next.js) inventory planner on Snowflake App Runtime.
 
 **Governance and security from day one** (Session 3)
-Before building any AI, we establish RBAC roles (RETAIL_MERCHANDISER, RETAIL_ANALYST, STORE_MANAGER, FINANCE_ANALYST) with appropriate privilege hierarchies, column-level masking on sensitive cost and margin data, and tagging policies. Every model, dashboard, and agent respects these boundaries automatically.
+Before building any AI, we establish RBAC roles (RETAIL_DATA_ENGINEER, RETAIL_DATA_SCIENTIST, RETAIL_MERCHANDISER, FINANCE_ANALYST) with appropriate privilege hierarchies, column-level masking on sensitive cost and margin data, and tagging policies. Every model, dashboard, and agent respects these boundaries automatically.
 """)
 
 with st.container(border=True):
@@ -106,8 +109,9 @@ st.markdown("#### Prerequisites")
 with st.container(border=True):
     st.markdown("""
 - Snowflake account with **ACCOUNTADMIN** role — see **Getting Started** in the sidebar to provision a free trial
-- **Cortex Code** open in Snowsight and connected to your account
-- Cross-region inference enabled (for Cortex LLM functions)
+- **Cortex Code** open in Snowsight (right navigation panel) and connected to your account
+- Cross-region inference enabled (for Cortex AI functions)
+- *Optional, Session 12 Part 2:* Cortex Code Desktop or CLI, Node.js 20+, and a paid (non-trial) account for the React app
 """)
 
 st.space("medium")

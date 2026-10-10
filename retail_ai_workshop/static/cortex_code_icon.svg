@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Cortex Code icon">
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#29B5E8"/>
+  <path d="M32 12 C34 24 40 30 52 32 C40 34 34 40 32 52 C30 40 24 34 12 32 C24 30 30 24 32 12 Z" fill="#FFFFFF"/>
+  <path d="M47 13 C47.6 16.4 49.6 18.4 53 19 C49.6 19.6 47.6 21.6 47 25 C46.4 21.6 44.4 19.6 41 19 C44.4 18.4 46.4 16.4 47 13 Z" fill="#FFFFFF"/>
+</svg>

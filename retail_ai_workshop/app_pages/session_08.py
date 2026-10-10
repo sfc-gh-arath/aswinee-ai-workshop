@@ -7,7 +7,11 @@ from components import (
     render_key_concepts,
     render_domain_glossary,
     render_what_you_built,
+    render_what_you_will_build,
+    render_fallback_sql,
+    render_pro_tip,
 )
+from fallback_sql import FB_8_1, FB_8_2, FB_8_3
 
 render_session_header(
     session_num=8,
@@ -16,6 +20,13 @@ render_session_header(
     duration="30 min",
     building="Knowledge base, Cortex Search service, and RAG query pattern",
 )
+
+render_what_you_will_build([
+    "A CUSTOMER_KNOWLEDGE_BASE table that unifies reviews, support tickets, and return notes into one searchable corpus",
+    "A customer_feedback_search Cortex Search service with hybrid (vector + keyword) search and filterable attributes",
+    "Four search queries showing semantic matching and attribute filters",
+    "A complete RAG query: retrieve with Cortex Search, then answer with AI_COMPLETE and cite the source documents",
+])
 
 render_technologies_used([
     {"name": "Cortex Search Service", "description": "A managed hybrid search engine combining vector (semantic) and keyword search with automatic reranking. Created with a single SQL statement; handles embedding, indexing, and serving automatically.", "icon": "search"},
@@ -26,10 +37,10 @@ render_technologies_used([
 
 PROMPT_8_1 = """In RETAIL_AI_DEMO.RETAIL_OPS:
 
-1. First, create a unified text table for search called CUSTOMER_KNOWLEDGE_BASE that combines:
-   - CUSTOMER_REVIEWS: review_id as doc_id, 'product_review' as doc_type, review_text as content, rating as metadata_rating
-   - SUPPORT_TICKETS: ticket_id as doc_id, 'support_ticket' as doc_type, description_text as content, priority as metadata_priority
-   - PRODUCT_RETURN_NOTES: note_id as doc_id, 'return_note' as doc_type, return_reason_text as content, product_condition as metadata_condition
+1. First, create a unified text table for search called CUSTOMER_KNOWLEDGE_BASE that combines the sources below. Prefix each doc_id with its source so IDs stay unique across sources (for example 'REV-' || review_id), and cast all metadata columns to VARCHAR:
+   - CUSTOMER_REVIEWS: 'REV-' || review_id as doc_id, 'product_review' as doc_type, review_text as content, rating as metadata_rating
+   - SUPPORT_TICKETS: 'TKT-' || ticket_id as doc_id, 'support_ticket' as doc_type, description_text as content, priority as metadata_priority
+   - PRODUCT_RETURN_NOTES: 'RET-' || note_id as doc_id, 'return_note' as doc_type, return_reason_text as content, product_condition as metadata_condition
 
 2. Then create a Cortex Search Service:
    CREATE OR REPLACE CORTEX SEARCH SERVICE customer_feedback_search
@@ -46,12 +57,14 @@ PROMPT_8_1 = """In RETAIL_AI_DEMO.RETAIL_OPS:
 Execute all SQL. Then verify the service is created by running SHOW CORTEX SEARCH SERVICES."""
 
 render_prompt("Prompt 8.1", "Create Cortex Search Service", PROMPT_8_1)
+render_fallback_sql("Knowledge base and search service", FB_8_1)
 
 render_explanation("What this prompt does", """
 Two major steps: building a unified knowledge base and creating a search service.
 
 **Step 1 - CUSTOMER_KNOWLEDGE_BASE**: A UNION ALL table that combines three customer feedback sources into a common schema. This is the **corpus** for our search engine. Key design decisions:
 - `doc_type` enables filtering by source (reviews vs. support tickets vs. return notes)
+- Prefixed IDs (`REV-12`, `TKT-3`, `RET-8`) stay unique across sources, so citations in RAG answers point to exactly one document
 - `metadata_rating`, `metadata_priority`, `metadata_condition` become filter attributes
 - Each source contributes its most relevant text content
 
@@ -99,6 +112,7 @@ SELECT PARSE_JSON(
 Execute all 4 searches and show results."""
 
 render_prompt("Prompt 8.2", "Query the Search Service", PROMPT_8_2)
+render_fallback_sql("Query the search service", FB_8_2)
 
 render_explanation("What this prompt does", """
 Four search queries demonstrating different capabilities:
@@ -135,7 +149,7 @@ PROMPT_8_3 = """In RETAIL_AI_DEMO.RETAIL_OPS, implement a RAG pattern that:
 
 2. First retrieves the top 5 most relevant documents from customer_feedback_search using SEARCH_PREVIEW
 
-3. Then passes the retrieved context + question to SNOWFLAKE.CORTEX.COMPLETE() to generate a grounded answer:
+3. Then passes the retrieved context + question to AI_COMPLETE() to generate a grounded answer:
 
 WITH search_results AS (
     SELECT PARSE_JSON(
@@ -150,11 +164,11 @@ WITH search_results AS (
     )['results'] AS results
 ),
 context AS (
-    SELECT LISTAGG(r.value:content::STRING, '\\n\\n---\\n\\n') AS combined_context
+    SELECT LISTAGG('[' || r.value:doc_id::STRING || '] ' || r.value:content::STRING, '\\n\\n---\\n\\n') AS combined_context
     FROM search_results, LATERAL FLATTEN(input => results) r
 )
-SELECT SNOWFLAKE.CORTEX.COMPLETE(
-    'claude-3-5-sonnet',
+SELECT AI_COMPLETE(
+    'claude-sonnet-4-5',
     'You are a product quality analyst at Alpine & Co., a national apparel and footwear retailer. Based ONLY on the following customer feedback documents, answer the user question. Cite specific documents by their doc_id when referencing findings. If the documents do not contain enough information, say so.
 
 SOURCE DOCUMENTS:
@@ -163,21 +177,22 @@ SOURCE DOCUMENTS:
 USER QUESTION: What are the most common product quality issues reported by Alpine & Co. customers and what improvements should the product team prioritize?
 
 Provide a structured answer with: 1) Common quality issues by category, 2) Most affected product lines, 3) Recommended improvements, 4) Priority ranking.'
-) AS rag_response
+)::STRING AS rag_response
 FROM context;
 
 Execute and show the RAG response."""
 
 render_prompt("Prompt 8.3", "RAG Pattern: Search + Generate", PROMPT_8_3)
+render_fallback_sql("RAG query", FB_8_3)
 
 render_explanation("What this prompt does", """
 This implements the full **RAG (Retrieval Augmented Generation)** pattern in a single SQL query:
 
 **Step 1 - Retrieve**: SEARCH_PREVIEW finds the 5 most relevant customer feedback documents for the question.
 
-**Step 2 - Augment**: LATERAL FLATTEN + LISTAGG combines the retrieved documents into a single context string, separated by `---` delimiters.
+**Step 2 - Augment**: LATERAL FLATTEN + LISTAGG combines the retrieved documents into a single context string, each prefixed with its `[doc_id]` and separated by `---` delimiters.
 
-**Step 3 - Generate**: CORTEX.COMPLETE() receives the context + question and generates a grounded answer.
+**Step 3 - Generate**: AI_COMPLETE() receives the context + question and generates a grounded answer that cites the `[doc_id]`s.
 
 **RAG architecture diagram**:
 ```
@@ -190,7 +205,7 @@ User Question
 [Context Assembly] --> "SOURCE DOCUMENTS: doc1... doc2..."
      |
      v
-[LLM (COMPLETE)] --> Grounded answer with citations
+[LLM (AI_COMPLETE)] --> Grounded answer with citations
 ```
 
 **Why RAG works better than raw LLM**:
@@ -204,6 +219,12 @@ User Question
 **Retail application**: This exact pattern powers customer insight tools. A product manager asks a natural-language question about their product line, and the system retrieves relevant customer feedback and generates an actionable summary - grounded in actual customer data, not LLM imagination.
 """)
 
+
+render_pro_tip("Test your search service in the Cortex Search playground", """
+- Go to **AI & ML » Cortex Search**, then select **CUSTOMER_FEEDBACK_SEARCH** (database RETAIL_AI_DEMO, schema RETAIL_OPS).
+- The details page shows the indexing state, row count, embedding model, and refresh history.
+- Select **Playground** to type queries like *zipper broke* or *runs small*, toggle which columns are returned, and add a filter on `DOC_TYPE` - the same thing SEARCH_PREVIEW does in SQL.
+""")
 
 render_key_concepts([
     {"term": "Cortex Search Service", "definition": "A managed hybrid search engine created with SQL. It automatically handles embedding, indexing (vector + keyword), reranking, and auto-refresh. Think of it as Elasticsearch-as-a-SQL-statement."},

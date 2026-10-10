@@ -1,7 +1,15 @@
 import streamlit as st
-from components import render_session_header, render_prompt, render_explanation, render_technologies_used, render_key_concepts, render_domain_glossary, render_what_you_built
+from components import render_session_header, render_prompt, render_explanation, render_technologies_used, render_key_concepts, render_domain_glossary, render_what_you_built, render_what_you_will_build, render_fallback_sql, render_pro_tip
+from fallback_sql import FB_10_1, FB_10_2, FB_10_3, FB_10_4
 
 render_session_header(10, "Cortex Analyst & Semantic Views", "2:30 - 2:50 PM", "20 min", "Semantic view creation, AI-assisted expansion, and natural language queries")
+
+render_what_you_will_build([
+    "A RETAIL_OPERATIONS_VIEW semantic view over 6 tables with relationships, facts, dimensions, synonyms, metrics, and AI SQL instructions",
+    "A before/after test: one question Cortex Analyst answers well, and one it cannot answer yet",
+    "An AI-assisted expansion of the view to 8 tables (foot traffic and daily store KPIs)",
+    "Natural-language queries across the expanded view, including the question that failed before",
+])
 
 render_technologies_used([
     {"name": "Cortex Analyst", "description": "Snowflake's text-to-SQL engine that converts natural language questions into SQL queries. Uses a semantic view to understand your data's business meaning, relationships, and metrics.", "icon": "chat"},
@@ -30,7 +38,7 @@ Include:
   - total_revenue: SUM(total_amount)
   - total_units_sold: SUM(quantity)
   - avg_transaction_value: AVG(total_amount)
-  - total_cost: SUM(total_cost) from PURCHASE_ORDERS
+  - total_purchase_cost: SUM(total_cost) from PURCHASE_ORDERS (do not name the metric total_cost - it would clash with the TOTAL_COST column/fact and cause a cyclic reference error)
   - avg_days_of_supply: AVG(days_of_supply)
   - inventory_value: SUM(quantity_on_hand * retail_price)
 - Descriptive COMMENTs on every table, fact, dimension, and metric explaining the business meaning
@@ -39,6 +47,7 @@ Include:
 Execute the SQL and confirm with DESCRIBE SEMANTIC VIEW."""
 
 render_prompt("Prompt 10.1", "Create the Semantic View", PROMPT_10_1)
+render_fallback_sql("Create the semantic view", FB_10_1)
 
 render_explanation("What this prompt does", """
 Creates a **semantic view** - a first-class Snowflake object that enables natural language to SQL:
@@ -74,6 +83,7 @@ PROMPT_10_2 = """Ask Cortex Analyst these two questions using RETAIL_AI_DEMO.RET
 Show the generated SQL and results for each."""
 
 render_prompt("Prompt 10.2", "Test the Semantic View", PROMPT_10_2)
+render_fallback_sql("Equivalent SQL for the test questions", FB_10_2)
 
 render_explanation("What this prompt does", """
 Tests the semantic view with two deliberately chosen questions:
@@ -92,19 +102,20 @@ Tests the semantic view with two deliberately chosen questions:
 PROMPT_10_3 = """Now expand our RETAIL_OPERATIONS_VIEW semantic view in RETAIL_AI_DEMO.RETAIL_OPS to include two more tables: STORE_FOOT_TRAFFIC and DAILY_SALES_METRICS.
 
 1. Query INFORMATION_SCHEMA.COLUMNS to get the full schema of STORE_FOOT_TRAFFIC and DAILY_SALES_METRICS
-2. Use SNOWFLAKE.CORTEX.COMPLETE() to generate the additional facts, dimensions, and metrics definitions from those schemas — have it suggest useful synonyms and descriptive comments
+2. Use AI_COMPLETE('claude-sonnet-4-5', ...) to generate the additional facts, dimensions, and metrics definitions from those schemas — have it suggest useful synonyms and descriptive comments
 3. Recreate RETAIL_OPERATIONS_VIEW with all original definitions plus the new tables, relationships to STORES via store_id, and the AI-generated definitions
 
 Execute and verify with DESCRIBE SEMANTIC VIEW."""
 
 render_prompt("Prompt 10.3", "Expand the Semantic View with AI", PROMPT_10_3)
+render_fallback_sql("Expanded 8-table semantic view", FB_10_3)
 
 render_explanation("What this prompt does", """
 Uses an LLM to **expand** the semantic view with additional tables:
 
 **Schema extraction** from INFORMATION_SCHEMA gives the LLM the raw column names and types for STORE_FOOT_TRAFFIC and DAILY_SALES_METRICS.
 
-**LLM generation** via CORTEX.COMPLETE():
+**LLM generation** via AI_COMPLETE():
 - Infers business meaning from column names (e.g., `visitor_count` -> "Number of visitors entering the store")
 - Generates appropriate SYNONYMS (e.g., `visitor_count` WITH SYNONYMS = ('foot traffic', 'footfall', 'walk-ins'))
 - Creates METRICS with useful aggregations (AVG daily foot traffic, conversion rate)
@@ -129,6 +140,7 @@ PROMPT_10_4 = """Using the expanded semantic view RETAIL_AI_DEMO.RETAIL_OPS.RETA
 Re-ask the foot traffic question from Prompt 10.2 and compare the result now that the table is included."""
 
 render_prompt("Prompt 10.4", "Query with Natural Language", PROMPT_10_4)
+render_fallback_sql("Equivalent SQL using SEMANTIC_VIEW()", FB_10_4)
 
 render_explanation("What this prompt does", """
 Tests Cortex Analyst across both the **original and newly added** tables:
@@ -145,6 +157,13 @@ Tests Cortex Analyst across both the **original and newly added** tables:
 **Synonyms in action**: Try asking about "departments" instead of "categories" or "labels" instead of "brands" — Analyst routes to the correct dimension because of the synonym definitions.
 """)
 
+
+render_pro_tip("Explore and test the semantic view in Snowsight", """
+- **Editor and playground**: go to **AI & ML » Cortex Analyst** and select **RETAIL_OPERATIONS_VIEW**. Browse its tables, relationships, dimensions, facts, and metrics, then type the questions from this session into the **Playground** panel to see the generated SQL and results live.
+- **Suggestions**: the editor can recommend extra synonyms, metrics, and verified queries - accept the useful ones to improve answer quality.
+- **Catalog**: the view also appears under **Catalog » Explorer » RETAIL_AI_DEMO » RETAIL_OPS » Semantic Views**.
+- **Query it in SQL**: the fallback SQL above uses `SELECT * FROM SEMANTIC_VIEW(...)` - the same metric and dimension definitions, without an LLM.
+""")
 
 render_key_concepts([
     {"term": "Cortex Analyst", "definition": "Snowflake's text-to-SQL engine. Takes natural language questions and generates SQL queries using a semantic view for context. Supports aggregations, joins, filtering, time-series analysis, and more."},

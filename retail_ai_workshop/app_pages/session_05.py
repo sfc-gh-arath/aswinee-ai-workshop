@@ -7,7 +7,11 @@ from components import (
     render_key_concepts,
     render_domain_glossary,
     render_what_you_built,
+    render_what_you_will_build,
+    render_fallback_sql,
+    render_pro_tip,
 )
+from fallback_sql import FB_5_1, FB_5_2
 
 render_session_header(
     session_num=5,
@@ -16,6 +20,12 @@ render_session_header(
     duration="20 min",
     building="Dynamic table for live stockout scoring",
 )
+
+render_what_you_will_build([
+    "A LIVE_STOCKOUT_SCORES dynamic table that runs the Session 4 model on every SKU-store snapshot with a 1-minute target lag",
+    "A simulation that inserts today's inventory snapshots and watches them get scored automatically",
+    "A view of the dynamic table's refresh history to prove the pipeline runs without an orchestrator",
+])
 
 render_technologies_used([
     {"name": "Dynamic Tables", "description": "Declarative data pipelines that automatically refresh when upstream data changes. Define the transformation as a query and Snowflake handles the rest - scheduling, incremental refresh, and dependency management.", "icon": "sync"},
@@ -35,6 +45,7 @@ PROMPT_5_1 = """In RETAIL_AI_DEMO.RETAIL_OPS, create a dynamic table called LIVE
 Execute the CREATE DYNAMIC TABLE statement, then query it to show the top 10 highest-risk SKU-store combinations (sorted by predicted_stockout_probability descending)."""
 
 render_prompt("Prompt 5.1", "Create Dynamic Table for Live Scoring", PROMPT_5_1)
+render_fallback_sql("Create the scoring dynamic table", FB_5_1)
 
 render_explanation("What this prompt does", """
 This creates a **dynamic table** that operationalizes our ML model:
@@ -91,6 +102,7 @@ PROMPT_5_2 = """In RETAIL_AI_DEMO.RETAIL_OPS:
 Execute all SQL and show results."""
 
 render_prompt("Prompt 5.2", "Simulate New Data and Watch Refresh", PROMPT_5_2)
+render_fallback_sql("Insert new data and refresh", FB_5_2)
 
 render_explanation("What this prompt does", """
 This demonstrates the **real-time nature** of dynamic tables:
@@ -119,6 +131,12 @@ LIMIT 5;
 **Real-world retail application**: In a live deployment, INVENTORY_LEVELS would be fed by POS transactions, warehouse management systems, and e-commerce order feeds. The dynamic table ensures stockout predictions are always current, enabling automated alerts to store managers and replenishment planners.
 """)
 
+
+render_pro_tip("Watch your pipeline in Snowsight", """
+- **Refresh monitoring**: go to **Transformation » Dynamic tables** and select **LIVE_STOCKOUT_SCORES**. The **Refresh History** tab shows each refresh, whether it was incremental or full, and how long it took.
+- **Lineage graph**: open the **Graph** tab (or **Catalog » Explorer » ... » LIVE_STOCKOUT_SCORES » Lineage**) to see INVENTORY_LEVELS, PRODUCTS, and STORES flowing into the dynamic table.
+- **Save credits**: after the lab, select **Suspend** on the dynamic table so the 1-minute lag stops waking the warehouse.
+""")
 
 render_key_concepts([
     {"term": "Dynamic Tables", "definition": "A Snowflake table type defined by a SQL query that automatically maintains its contents as source data changes. Think of it as a materialized view that Snowflake keeps up-to-date for you, with configurable freshness guarantees."},

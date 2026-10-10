@@ -1,7 +1,15 @@
 import streamlit as st
-from components import render_session_header, render_prompt, render_explanation, render_technologies_used, render_key_concepts, render_domain_glossary, render_what_you_built
+from components import render_session_header, render_prompt, render_explanation, render_technologies_used, render_key_concepts, render_domain_glossary, render_what_you_built, render_what_you_will_build, render_fallback_sql, render_pro_tip
+from fallback_sql import FB_13_1, FB_13_2, FB_13_3
 
 render_session_header(13, "AI Observability, Monitoring & Cost Optimization", "3:40 - 4:05 PM", "25 min", "Usage monitoring, cost analysis, and workshop inventory")
+
+render_what_you_will_build([
+    "Usage queries showing AI function tokens and credits by function and model",
+    "A credit breakdown across warehouses, AI functions, Cortex Search, Agents, and containers",
+    "AI-generated recommendations for running these workloads cost-effectively in production",
+    "A complete inventory and AI-written summary of everything you built today",
+])
 
 render_technologies_used([
     {"name": "ACCOUNT_USAGE Views", "description": "Snowflake's comprehensive usage tracking in the SNOWFLAKE database. Covers query history, warehouse credits, Cortex function usage, login history, and more. Data retained for 365 days.", "icon": "monitoring"},
@@ -14,8 +22,8 @@ PROMPT_13_1 = """In RETAIL_AI_DEMO.RETAIL_OPS, run these observability queries:
 
 1. Query SNOWFLAKE.ACCOUNT_USAGE.CORTEX_FUNCTIONS_USAGE_HISTORY (or the equivalent view) to show:
    - Total Cortex function calls today/this session
-   - Breakdown by function type (COMPLETE, SENTIMENT, TRANSLATE, SUMMARIZE, EMBED_TEXT)
-   - Credits consumed by each function type
+   - Breakdown by function and model (AI_COMPLETE, AI_SENTIMENT, AI_CLASSIFY, AI_EXTRACT, AI_TRANSLATE, AI_EMBED, ...)
+   - Tokens and credits consumed (TOKENS and TOKEN_CREDITS columns)
 
 2. Query SNOWFLAKE.ACCOUNT_USAGE.METERING_DAILY_HISTORY to show:
    - Credits used by RETAIL_AI_WH today
@@ -25,11 +33,12 @@ PROMPT_13_1 = """In RETAIL_AI_DEMO.RETAIL_OPS, run these observability queries:
    - DESCRIBE CORTEX SEARCH SERVICE customer_feedback_search
    - Show refresh history and status
 
-4. Query the QUERY_HISTORY to show all Cortex-related queries run during our workshop, their execution times, and credit costs. Order by credits_used descending.
+4. Join SNOWFLAKE.ACCOUNT_USAGE.CORTEX_FUNCTIONS_QUERY_USAGE_HISTORY to QUERY_HISTORY on query_id to show the AI queries run during our workshop, their execution times, tokens and token credits. Order by token_credits descending.
 
 Execute all queries and show results."""
 
 render_prompt("Prompt 13.1", "Monitor AI Function Usage", PROMPT_13_1)
+render_fallback_sql("AI usage monitoring", FB_13_1)
 
 render_explanation("What this prompt does", """
 Comprehensive **AI observability** across four monitoring dimensions:
@@ -38,25 +47,30 @@ Comprehensive **AI observability** across four monitoring dimensions:
 ```sql
 SELECT
   function_name,
-  COUNT(*) AS call_count,
+  model_name,
+  COUNT(*) AS usage_rows,
   SUM(tokens) AS total_tokens,
-  SUM(credits_used) AS total_credits
+  SUM(token_credits) AS total_credits
 FROM SNOWFLAKE.ACCOUNT_USAGE.CORTEX_FUNCTIONS_USAGE_HISTORY
 WHERE start_time >= CURRENT_DATE()
-GROUP BY function_name
+GROUP BY function_name, model_name
 ORDER BY total_credits DESC;
 ```
 
-This tells you exactly which AI functions are consuming credits. COMPLETE() calls are typically the most expensive due to LLM inference costs.
+This tells you exactly which AI functions are consuming credits. AI_COMPLETE() calls are typically the most expensive due to LLM inference costs.
 
-**2. Warehouse metering**:
+**2. Warehouse and service metering**:
 ```sql
-SELECT
-  warehouse_name,
-  SUM(credits_used) AS credits
+-- Credits by service type (WAREHOUSE_METERING, AI_SERVICES, CORTEX_SEARCH, ...)
+SELECT service_type, SUM(credits_used) AS credits
 FROM SNOWFLAKE.ACCOUNT_USAGE.METERING_DAILY_HISTORY
 WHERE usage_date = CURRENT_DATE()
-  AND warehouse_name = 'RETAIL_AI_WH'
+GROUP BY service_type;
+
+-- Credits for one warehouse
+SELECT warehouse_name, SUM(credits_used) AS credits
+FROM SNOWFLAKE.ACCOUNT_USAGE.WAREHOUSE_METERING_HISTORY
+WHERE start_time >= CURRENT_DATE() AND warehouse_name = 'RETAIL_AI_WH'
 GROUP BY warehouse_name;
 ```
 
@@ -78,7 +92,7 @@ PROMPT_13_2 = """In RETAIL_AI_DEMO.RETAIL_OPS, analyze our workshop's AI cost fo
    - ML model training credits
 
 2. Generate recommendations for production optimization:
-   Use SNOWFLAKE.CORTEX.COMPLETE() to analyze our usage patterns and suggest:
+   Use AI_COMPLETE('claude-sonnet-4-5', ...) to analyze our usage patterns and suggest:
    - Which LLM model to use for each use case (cost vs quality tradeoff)
    - Optimal warehouse size for different workloads
    - Recommended Cortex Search TARGET_LAG for our data freshness needs
@@ -87,6 +101,7 @@ PROMPT_13_2 = """In RETAIL_AI_DEMO.RETAIL_OPS, analyze our workshop's AI cost fo
 Show the cost analysis and AI-generated optimization recommendations."""
 
 render_prompt("Prompt 13.2", "Cost Optimization Analysis", PROMPT_13_2)
+render_fallback_sql("Cost breakdown and recommendations", FB_13_2)
 
 render_explanation("What this prompt does", """
 Two-part analysis: **cost accounting** and **AI-generated optimization**:
@@ -96,7 +111,7 @@ Two-part analysis: **cost accounting** and **AI-generated optimization**:
 | Component | Typical Workshop Cost |
 |-----------|---------------------|
 | Warehouse compute (MEDIUM, ~2hrs active) | ~8 credits |
-| Cortex COMPLETE() calls (claude-3-5-sonnet) | ~2-5 credits |
+| AI_COMPLETE() calls (claude-sonnet-4-5) | ~2-5 credits |
 | Cortex SENTIMENT/TRANSLATE/SUMMARIZE | ~0.5 credits |
 | Cortex Search serving | ~0.5 credits |
 | Dynamic table refresh | ~0.5 credits |
@@ -109,8 +124,8 @@ Two-part analysis: **cost accounting** and **AI-generated optimization**:
 
 | Use Case | Current | Optimized |
 |----------|---------|-----------|
-| Product classification | claude-3-5-sonnet | llama3.1-8b (10x cheaper for simple classification) |
-| Customer feedback analysis | claude-3-5-sonnet | Keep (needs strong reasoning) |
+| Product classification | AI_COMPLETE with claude-sonnet-4-5 | AI_CLASSIFY, or a small model such as llama3.1-8b |
+| Customer feedback analysis | claude-sonnet-4-5 | Keep (needs strong reasoning) |
 | Sentiment scoring | SENTIMENT() | Keep (purpose-built, cheapest option) |
 | Search lag | 1 hour | 1 day (customer reviews don't change often) |
 | Dynamic table lag | 1 minute | 5 minutes (sufficient for most retail operations) |
@@ -139,11 +154,12 @@ PROMPT_13_3 = """In RETAIL_AI_DEMO.RETAIL_OPS, create a final summary of everyth
 
 2. Show a timeline of object creation ordered by created_on timestamp.
 
-3. Generate a brief "what we accomplished" summary using SNOWFLAKE.CORTEX.COMPLETE() that describes the full AI pipeline we built from raw data to deployed applications.
+3. Generate a brief "what we accomplished" summary using AI_COMPLETE('claude-sonnet-4-5', ...) that describes the full AI pipeline we built from raw data to deployed applications.
 
 Execute and show the complete inventory."""
 
 render_prompt("Prompt 13.3", "Workshop Summary Query", PROMPT_13_3)
+render_fallback_sql("Workshop inventory and summary", FB_13_3)
 
 render_explanation("What this prompt does", """
 A comprehensive **inventory and reflection** on the workshop:
@@ -163,7 +179,7 @@ SHOW USER FUNCTIONS IN SCHEMA RETAIL_AI_DEMO.RETAIL_OPS;
 - ~15+ tables (reference + operational + feedback)
 - 2+ views (feature engineering, train/test splits)
 - 1 dynamic table (LIVE_STOCKOUT_SCORES)
-- 1 ML model (RETAIL_DEMAND_MODEL or similar)
+- 1 ML model (STOCKOUT_PREDICTION_MODEL) plus STOCKOUT_PREDICTOR in the Model Registry
 - 1 Cortex Search service (customer_feedback_search)
 - 1 Streamlit app (RETAIL_DASHBOARD)
 - 1+ stages (STREAMLIT_STAGE)
@@ -185,6 +201,12 @@ Semantic View → Cortex Analyst → Agent → Streamlit App
 ```
 """)
 
+
+render_pro_tip("Monitor cost and usage in Snowsight", """
+- **Cost management**: go to **Admin » Cost management** to see credits by service type (warehouses, AI services, Cortex Search, containers) and by day; filter to today to see the workshop's footprint.
+- **Query history**: go to **Monitoring » Query History**, filter by warehouse **RETAIL_AI_WH**, and sort by duration to find the most expensive AI queries.
+- **Clean up**: under **Compute » Compute pools** suspend **RETAIL_AI_COMPUTE_POOL**, under **Transformation » Dynamic tables** suspend **LIVE_STOCKOUT_SCORES**, and under **AI & ML » Cortex Search** suspend the search service when you are done.
+""")
 
 render_key_concepts([
     {"term": "ACCOUNT_USAGE", "definition": "A Snowflake-provided shared database (SNOWFLAKE.ACCOUNT_USAGE) containing views that track all account activity: queries, logins, warehouse usage, Cortex function calls, storage, and more. Data has a 45-minute latency and is retained for 365 days."},

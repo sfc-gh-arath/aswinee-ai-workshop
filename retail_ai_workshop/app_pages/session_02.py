@@ -7,7 +7,11 @@ from components import (
     render_key_concepts,
     render_domain_glossary,
     render_what_you_built,
+    render_what_you_will_build,
+    render_fallback_sql,
+    render_pro_tip,
 )
+from fallback_sql import FB_2_1, FB_2_2, FB_2_3, FB_2_4
 
 render_session_header(
     session_num=2,
@@ -16,6 +20,13 @@ render_session_header(
     duration="30 min",
     building="12 operational data tables covering structured, time-series, unstructured, and geospatial data",
 )
+
+render_what_you_will_build([
+    "3 structured fact tables: sales transactions, purchase orders, and inventory levels",
+    "4 time-series tables: store foot traffic, daily sales metrics, website clickstream, and inventory snapshots",
+    "5 unstructured text tables: reviews, support tickets, campaigns, bilingual supplier emails, and return notes",
+    "A row-count audit of all 15 tables using INFORMATION_SCHEMA",
+])
 
 render_technologies_used([
     {"name": "Structured Data Tables", "description": "Traditional relational tables with typed columns, foreign keys, and constraints. These are the backbone of operational analytics.", "icon": "table_chart"},
@@ -35,6 +46,7 @@ PROMPT_2_1 = """In RETAIL_AI_DEMO.RETAIL_OPS, create and populate these structur
 Execute all SQL to create and populate these tables."""
 
 render_prompt("Prompt 2.1", "Structured Operational Data", PROMPT_2_1)
+render_fallback_sql("Structured operational data", FB_2_1)
 
 render_explanation("What this prompt does", """
 This creates three core **fact tables** that represent the operational heart of retail:
@@ -64,6 +76,7 @@ PROMPT_2_2 = """In RETAIL_AI_DEMO.RETAIL_OPS, create and populate these time-ser
 Execute all SQL."""
 
 render_prompt("Prompt 2.2", "Time-Series Data", PROMPT_2_2)
+render_fallback_sql("Time-series data", FB_2_2)
 
 render_explanation("What this prompt does", """
 This creates four **time-series tables** representing operational metrics and customer behavior data:
@@ -98,6 +111,7 @@ PROMPT_2_3 = """In RETAIL_AI_DEMO.RETAIL_OPS, create and populate these unstruct
 Make sure all text fields contain substantial, realistic content (at least 100 words for review_text, campaign_brief_text, and description fields). Execute all SQL."""
 
 render_prompt("Prompt 2.3", "Unstructured Text Data for AI", PROMPT_2_3)
+render_fallback_sql("Unstructured text data", FB_2_3)
 
 render_explanation("What this prompt does", """
 This creates five tables of **unstructured text data** - the raw material for Cortex LLM functions, Cortex Search, and RAG pipelines:
@@ -119,6 +133,7 @@ This creates five tables of **unstructured text data** - the raw material for Co
 PROMPT_2_4 = """Run a query in RETAIL_AI_DEMO.RETAIL_OPS that shows every table name and its row count, ordered by row count descending. Use INFORMATION_SCHEMA.TABLES. Format it nicely."""
 
 render_prompt("Prompt 2.4", "Verify All Data Tables", PROMPT_2_4)
+render_fallback_sql("Verify all tables", FB_2_4)
 
 render_explanation("What this prompt does", """
 A quick verification query. Cortex Code will generate something like:
@@ -136,6 +151,12 @@ ORDER BY row_count DESC;
 You should see approximately **2,200+ total rows** across 15 tables (3 from Session 1 + 12 from this session).
 """)
 
+
+render_pro_tip("Browse and profile your data in Snowsight", """
+- Go to **Catalog » Explorer » RETAIL_AI_DEMO » RETAIL_OPS » Tables** to see all 15 tables with their row counts and sizes.
+- Select **CUSTOMER_REVIEWS** and open **Data Preview** to read the generated review text.
+- In any worksheet result grid, select a column header to see a quick **column profile** (distribution, nulls, distinct values) in the right-hand panel.
+""")
 
 render_key_concepts([
     {"term": "Star Schema", "definition": "A data modeling pattern with a central fact table (SALES_TRANSACTIONS) surrounded by dimension tables (PRODUCTS, STORES, SUPPLIERS). Fact tables contain measures and foreign keys; dimension tables contain descriptive attributes. This is the dominant pattern in data warehousing."},

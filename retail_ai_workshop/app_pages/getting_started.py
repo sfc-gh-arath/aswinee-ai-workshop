@@ -1,4 +1,8 @@
+from pathlib import Path
+
 import streamlit as st
+
+_STATIC = Path(__file__).parent.parent / "static"
 
 st.title("Getting Started")
 st.markdown("Provision a Snowflake account for the workshop")
@@ -38,8 +42,16 @@ st.space("small")
 st.markdown("#### Step 3: Open Cortex Code")
 
 with st.container(border=True):
+    icon_col, text_col = st.columns([1, 10], vertical_alignment="center")
+    with icon_col:
+        st.image(str(_STATIC / "cortex_code_icon.svg"), width=56)
+    with text_col:
+        st.markdown("""
+Once logged in to Snowsight, **open Cortex Code from the right navigation panel**.
+Look for the **blue square icon with a white sparkle** (shown here) in the top-right corner of Snowsight - its tooltip reads **"Open or move CoCo"**. Click it to open the Cortex Code panel.
+""")
     st.markdown("""
-Once logged in to Snowsight, open **Cortex Code** from the left navigation panel. This is the AI coding assistant where you will paste all prompts from this workshop.
+This is the AI coding assistant where you will paste all prompts from this workshop.
 
 Confirm you are using the **ACCOUNTADMIN** role — you can check and switch roles in the bottom-left of the Snowsight UI.
 """)

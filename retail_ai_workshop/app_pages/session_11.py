@@ -1,7 +1,15 @@
 import streamlit as st
-from components import render_session_header, render_prompt, render_explanation, render_technologies_used, render_key_concepts, render_domain_glossary, render_what_you_built
+from components import render_session_header, render_prompt, render_explanation, render_technologies_used, render_key_concepts, render_domain_glossary, render_what_you_built, render_what_you_will_build, render_fallback_sql, render_pro_tip
+from fallback_sql import FB_11_1, FB_11_2, FB_11_3, FB_11_4
 
 render_session_header(11, "Building Agentic Systems with Cortex Agent API", "2:50 - 3:20 PM", "30 min", "Cortex Agent with Analyst + Search + custom tools")
+
+render_what_you_will_build([
+    "RETAIL_OPS_AGENT - a Cortex Agent (model AUTO) that routes between the semantic view and the Cortex Search service",
+    "SQL tests of the agent with structured, unstructured, mixed, and Spanish questions via DATA_AGENT_RUN",
+    "A CALCULATE_STOCKOUT_RISK UDF added to the agent as a custom tool",
+    "A published agent you can chat with in Snowflake Intelligence",
+])
 
 render_technologies_used([
     {"name": "Cortex Agent (CREATE AGENT)", "description": "An orchestrating AI that plans tasks, selects tools (Analyst, Search, custom), executes them, reflects on results, and generates responses. Created as a first-class Snowflake object.", "icon": "smart_toy"},
@@ -13,7 +21,7 @@ render_technologies_used([
 PROMPT_11_1 = """In RETAIL_AI_DEMO.RETAIL_OPS, create a Cortex Agent called RETAIL_OPS_AGENT that store operations staff can use to ask questions about both structured data and customer feedback.
 
 It should:
-- Use claude-sonnet-4-6 as the orchestration model
+- Set the orchestration model to AUTO (models: orchestration: auto) so Snowflake picks the best available model automatically
 - Have two tools: the RETAIL_OPERATIONS_VIEW semantic view (for structured data queries) and the customer_feedback_search Cortex Search service (for customer reviews and feedback)
 - Include instructions that define it as the "Alpine & Co. Retail Operations Assistant", guiding it to use the right tool for the question type — structured data tool for sales/inventory/supplier metrics, search tool for customer reviews/feedback/complaints
 - Mention key domain context in the instructions: national apparel and footwear retailer with 120+ stores, peak seasons are Nov-Dec (holiday) and August (back-to-school), private labels Summit (activewear) and Basecamp (casual basics), and support for English and Spanish
@@ -22,13 +30,14 @@ It should:
 Execute and show confirmation."""
 
 render_prompt("Prompt 11.1", "Create the Cortex Agent", PROMPT_11_1)
+render_fallback_sql("Create the agent", FB_11_1)
 
 render_explanation("What this prompt does", """
 Creates a **Cortex Agent** - an AI orchestrator that combines multiple data tools:
 
 **CREATE AGENT anatomy**:
 
-- **MODEL**: The LLM used for orchestration (planning, reflection, response generation). `claude-sonnet-4-6` is recommended for its strong reasoning.
+- **MODEL**: The LLM used for orchestration (planning, reflection, response generation). Setting it to **`auto`** lets Snowflake choose the highest-quality model available in your account and upgrade automatically as new models arrive - this is the recommended setting.
 
 - **TOOLS**: The capabilities the agent can use:
   - **Cortex Search service** (`customer_feedback_search`): For searching customer reviews and feedback
@@ -67,6 +76,7 @@ Run these four queries one at a time, parsing the response with TRY_PARSE_JSON:
 For each, show the full response including which tools the agent chose to use."""
 
 render_prompt("Prompt 11.2", "Test the Agent", PROMPT_11_2)
+render_fallback_sql("Run the agent from SQL", FB_11_2)
 
 render_explanation("What this prompt does", """
 Tests the Agent via `SNOWFLAKE.CORTEX.DATA_AGENT_RUN()` — a SQL function that runs an existing agent object and returns JSON:
@@ -88,9 +98,11 @@ SELECT TRY_PARSE_JSON(
 4. **Bilingual** — Spanish question routed to English-language tools, response synthesized in Spanish
 
 **What to look for in the JSON response**:
-- `content` array contains thinking steps, tool_use entries, and the final text response
-- Tool use entries show which tools were called and with what parameters
+- `content` array contains `thinking`, `tool_use`, `tool_result`, `text`, and sometimes `table` entries
+- `tool_use` entries show which tools were called and with what parameters
 - The `metadata` section includes token usage for cost tracking
+
+**Note**: the request body passed to DATA_AGENT_RUN must be a constant string (a `$$...$$` literal), not an expression built from a column.
 """)
 
 
@@ -103,7 +115,7 @@ CREATE OR REPLACE FUNCTION RETAIL_AI_DEMO.RETAIL_OPS.CALCULATE_STOCKOUT_RISK(
     current_inventory NUMBER,
     avg_daily_sales NUMBER
 )
-RETURNS VARIANT
+RETURNS OBJECT
 LANGUAGE SQL
 AS
 $$
@@ -129,9 +141,13 @@ $$;
 
 2. Test the UDF with sample inputs.
 
-3. Recreate RETAIL_OPS_AGENT to include CALCULATE_STOCKOUT_RISK as an additional tool alongside the existing Analyst and Search tools."""
+3. Recreate RETAIL_OPS_AGENT (keep models: orchestration: auto) to include CALCULATE_STOCKOUT_RISK as an additional tool alongside the existing Analyst and Search tools. Use this syntax for the custom tool in the agent specification:
+   - In tools: tool_spec with type "generic", name "calculate_stockout_risk", a description, and an input_schema (type object) with properties product_category (string), current_inventory (number), avg_daily_sales (number), all required
+   - In tool_resources: calculate_stockout_risk with type "function", identifier "RETAIL_AI_DEMO.RETAIL_OPS.CALCULATE_STOCKOUT_RISK", and execution_environment {type: "warehouse", warehouse: "RETAIL_AI_WH"}
+   Do NOT use tool type "function" in the tools section - that gives the error "Tool type function is not valid"."""
 
 render_prompt("Prompt 11.3", "Agent with Custom Tool", PROMPT_11_3)
+render_fallback_sql("UDF and agent with custom tool", FB_11_3)
 
 render_explanation("What this prompt does", """
 Extends the Agent with a **custom UDF tool**:
@@ -167,6 +183,7 @@ PROMPT_11_4 = """Test the enhanced RETAIL_OPS_AGENT (now with 3 tools) using SNO
 Show the parsed JSON responses and note which tools the agent selected for each."""
 
 render_prompt("Prompt 11.4", "Test the Enhanced Agent", PROMPT_11_4)
+render_fallback_sql("Test the enhanced agent", FB_11_4)
 
 render_explanation("What this prompt does", """
 Tests the enhanced Agent's ability to use the **new custom tool** alongside Analyst and Search:
@@ -184,6 +201,16 @@ Watch the `tool_use` entries in the JSON response to see how the Agent plans and
 """)
 
 
+render_pro_tip("Test, publish, and chat with your agent in Snowsight", """
+1. Go to **AI & ML » Agent Studio** (shown as **Agents** in some accounts) and select **RETAIL_OPS_AGENT** under `RETAIL_AI_DEMO.RETAIL_OPS`.
+2. Review the **Orchestration** model (`auto`), the three **Tools**, and the sample questions; ask a question in the built-in playground to watch the tool calls step by step.
+3. Select **Publish** to make the agent available in **CoWork**.
+4. Open **CoWork** from the left navigation, pick **Alpine & Co. Retail Ops Assistant** from the agent dropdown, and try: *Show me a bar chart of revenue by category* or *What should I reorder at the Portland store this week?*
+
+:material/info: Other users need USAGE on the agent and its tools (semantic view, search service, UDF) plus a default warehouse to use it.
+""")
+
+
 render_key_concepts([
     {"term": "Cortex Agent", "definition": "A first-class Snowflake object that orchestrates LLMs, Cortex Analyst, Cortex Search, and custom tools to answer complex questions. Supports planning, tool use, reflection, and multi-turn conversations via threads."},
     {"term": "Tool Routing", "definition": "The Agent's ability to select the appropriate tool for each question or sub-task. Structured data queries -> Analyst, unstructured search -> Search, calculations -> custom UDFs. The LLM decides routing based on the question and tool descriptions."},
@@ -197,7 +224,7 @@ render_domain_glossary([
 ])
 
 render_what_you_built([
-    "RETAIL_OPS_AGENT - Cortex Agent with Analyst + Search tools",
+    "RETAIL_OPS_AGENT - Cortex Agent (model AUTO) with Analyst + Search tools",
     "Tested structured, unstructured, mixed, and bilingual queries",
     "CALCULATE_STOCKOUT_RISK UDF as a custom tool",
     "Enhanced agent with three tool types (Analyst + Search + custom)",

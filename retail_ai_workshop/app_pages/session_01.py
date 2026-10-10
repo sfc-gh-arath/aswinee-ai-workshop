@@ -7,7 +7,11 @@ from components import (
     render_key_concepts,
     render_domain_glossary,
     render_what_you_built,
+    render_what_you_will_build,
+    render_fallback_sql,
+    render_pro_tip,
 )
+from fallback_sql import FB_1_1, FB_1_2
 
 render_session_header(
     session_num=1,
@@ -16,6 +20,13 @@ render_session_header(
     duration="30 min",
     building="Database, schema, warehouse, and core reference tables",
 )
+
+render_what_you_will_build([
+    "RETAIL_AI_DEMO database, RETAIL_OPS schema, and a MEDIUM RETAIL_AI_WH warehouse",
+    "PRODUCTS reference table with 25 branded and private-label apparel and footwear items",
+    "STORES reference table with 8 Alpine & Co. locations across the US",
+    "SUPPLIERS reference table with 15 domestic and international suppliers",
+])
 
 render_technologies_used([
     {"name": "CREATE DATABASE / SCHEMA", "description": "Snowflake's logical containers for organizing objects. Databases are the top level; schemas group related tables, views, and other objects.", "icon": "database"},
@@ -30,11 +41,12 @@ PROMPT_1_1 = """Create a Snowflake database called RETAIL_AI_DEMO with a schema 
 
 2. STORES - 8 rows representing Alpine & Co. retail locations. Columns: store_id, store_name, city, state, store_type (flagship, mall, outlet), latitude, longitude (use real coordinates), square_footage, annual_revenue_millions. Use these real US cities: New York, Los Angeles, Chicago, Houston, Portland, Denver, Miami, Seattle.
 
-3. SUPPLIERS - 15 rows of domestic and international apparel/footwear suppliers. Columns: supplier_id, company_name, country, region (Domestic, Asia-Pacific, Europe), primary_category, lead_time_days, reliability_score (1-10), annual_volume_units, payment_terms. Include a mix of domestic (USA), Asian (Vietnam, China, Bangladesh, Indonesia), and European (Italy, Portugal) suppliers.
+3. SUPPLIERS - 15 rows of domestic and international apparel/footwear suppliers. Columns: supplier_id, company_name, country, region (Domestic, Asia-Pacific, Europe), primary_category, lead_time_days, reliability_score (1-10), annual_volume_units, payment_terms. Include a mix of domestic (USA), Asian (Vietnam, China, Bangladesh, Indonesia), Latin American (Mexico, region 'Americas'), and European (Italy, Portugal) suppliers.
 
 Make sure to USE the database and schema after creation. Execute all the SQL."""
 
 render_prompt("Prompt 1.1", "Create the Foundation", PROMPT_1_1)
+render_fallback_sql("Create the foundation", FB_1_1)
 
 render_explanation("What this prompt does", """
 This prompt instructs Cortex Code to generate and execute multiple SQL statements that set up the entire environment:
@@ -80,6 +92,7 @@ The tables we're building follow a **star schema** design pattern:
 PROMPT_1_2 = """Show me the row counts for all three tables we just created (PRODUCTS, STORES, SUPPLIERS) in RETAIL_AI_DEMO.RETAIL_OPS, and show a sample of 3 rows from each table so I can verify the data looks right."""
 
 render_prompt("Prompt 1.2", "Verify and Explore the Foundation", PROMPT_1_2)
+render_fallback_sql("Verify the foundation", FB_1_2)
 
 render_explanation("What this prompt does", """
 This is a verification step. Cortex Code will generate queries like:
@@ -97,6 +110,11 @@ SELECT * FROM RETAIL_AI_DEMO.RETAIL_OPS.PRODUCTS LIMIT 3;
 **Why verify**: It's good practice to confirm that Cortex Code generated the expected number of rows and that the data quality looks right. Since Cortex Code generates synthetic data, you should spot-check that product categories, store locations, and supplier details are realistic. Pay attention to margin percentages - private-label products (Summit, Basecamp) should have higher margins than branded products.
 """)
 
+
+render_pro_tip("See your new objects in Snowsight", """
+- **Catalog**: in the Snowsight navigation menu, go to **Catalog » Explorer » RETAIL_AI_DEMO » RETAIL_OPS » Tables**. Select **PRODUCTS** and open the **Data Preview** tab to browse rows, or **Columns** to see the schema.
+- **Warehouse**: go to **Compute » Warehouses** and select **RETAIL_AI_WH** to see its size, auto-suspend setting, and current state.
+""")
 
 render_key_concepts([
     {"term": "Virtual Warehouse", "definition": "A named compute cluster in Snowflake. Sizes range from X-Small (1 node, 1 credit/hr) to 6X-Large (512 nodes, 512 credits/hr). Warehouses auto-suspend when idle and auto-resume on query. You can have unlimited warehouses running concurrently."},

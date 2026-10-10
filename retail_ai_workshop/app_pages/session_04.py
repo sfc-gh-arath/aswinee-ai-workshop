@@ -1,5 +1,6 @@
 import streamlit as st
-from components import render_session_header, render_prompt, render_explanation, render_technologies_used, render_key_concepts, render_domain_glossary, render_what_you_built
+from components import render_session_header, render_prompt, render_explanation, render_technologies_used, render_key_concepts, render_domain_glossary, render_what_you_built, render_what_you_will_build, render_fallback_sql, render_pro_tip
+from fallback_sql import FB_4_1, FB_4_2, FB_4_3, FB_4_4, FB_4_5
 
 render_session_header(
     session_num=4,
@@ -8,6 +9,13 @@ render_session_header(
     duration="30 min",
     building="Feature engineering, ML classification, Snowflake Notebook with Feature Store & Model Registry",
 )
+
+render_what_you_will_build([
+    "A STOCKOUT_FEATURES view that turns inventory, product, and store data into ML features plus an IS_STOCKOUT label",
+    "An AutoML classification model (STOCKOUT_PREDICTION_MODEL) trained with SQL, with accuracy, precision, recall, and feature importance",
+    "A Snowflake Notebook pipeline: Feature Store entity and feature view, point-in-time training data, XGBoost vs Random Forest vs Logistic Regression",
+    "The best model registered as STOCKOUT_PREDICTOR V1 in the Model Registry and callable from SQL",
+])
 
 render_technologies_used([
     {"name": "Snowflake ML Classification", "description": "Built-in AutoML that trains, tunes, and evaluates classification models entirely within Snowflake. No external tools or data movement required.", "icon": "model_training"},
@@ -32,6 +40,7 @@ PROMPT_4_1 = """In RETAIL_AI_DEMO.RETAIL_OPS, create a view called STOCKOUT_FEAT
 Only include rows where quantity_on_hand is not null. Execute the SQL, then show me the feature distribution: count of stockout vs not-stockout, and the average values of key features for each class."""
 
 render_prompt("Prompt 4.1", "Feature Engineering View", PROMPT_4_1)
+render_fallback_sql("Feature engineering view", FB_4_1)
 
 render_explanation("What this prompt does", """
 This creates a **feature engineering view** - the bridge between raw operational data and ML model training:
@@ -60,7 +69,7 @@ CASE WHEN EXTRACT(MONTH FROM snapshot_date) IN (11,12) THEN 1 ELSE 0 END AS is_h
 
 PROMPT_4_2 = """In RETAIL_AI_DEMO.RETAIL_OPS, use Snowpark ML to train a classification model to predict IS_STOCKOUT from our STOCKOUT_FEATURES view. Write and execute a Snowflake SQL script that:
 
-1. Creates a STOCKOUT_FEATURES_TRAIN and STOCKOUT_FEATURES_TEST split (80/20) from STOCKOUT_FEATURES using a random seed
+1. Creates a STOCKOUT_FEATURES_TRAIN and STOCKOUT_FEATURES_TEST split (80/20) from STOCKOUT_FEATURES using a deterministic hash on snapshot_id (MOD(ABS(HASH(snapshot_id)), 10) < 8 for train), so the split is stable every time the views are queried. Exclude the ID and date columns from the training view.
 2. Uses Snowflake's built-in ML Classification:
    
    CREATE OR REPLACE SNOWFLAKE.ML.CLASSIFICATION STOCKOUT_PREDICTION_MODEL(
@@ -72,18 +81,21 @@ PROMPT_4_2 = """In RETAIL_AI_DEMO.RETAIL_OPS, use Snowpark ML to train a classif
 First create the train/test views, then train the model, then run predictions on the test set and show the confusion matrix results (predicted vs actual counts). Also show the feature importances if available."""
 
 render_prompt("Prompt 4.2", "Train a Classification Model", PROMPT_4_2)
+render_fallback_sql("Train the classification model", FB_4_2)
 
 render_explanation("What this prompt does", """
 This trains a **classification model** using Snowflake's built-in ML:
 
-**Train/Test Split**: We create two views that randomly partition the data:
+**Train/Test Split**: We create two views that deterministically partition the data by hashing the ID:
 ```sql
 CREATE VIEW STOCKOUT_FEATURES_TRAIN AS
-  SELECT * FROM STOCKOUT_FEATURES SAMPLE (80) SEED(42);
+  SELECT <feature columns>, is_stockout FROM STOCKOUT_FEATURES
+  WHERE MOD(ABS(HASH(snapshot_id)), 10) < 8;
 CREATE VIEW STOCKOUT_FEATURES_TEST AS
-  SELECT * FROM STOCKOUT_FEATURES
-  WHERE snapshot_id NOT IN (SELECT snapshot_id FROM STOCKOUT_FEATURES_TRAIN);
+  SELECT snapshot_id, <feature columns>, is_stockout FROM STOCKOUT_FEATURES
+  WHERE MOD(ABS(HASH(snapshot_id)), 10) >= 8;
 ```
+`SAMPLE ... SEED` is only repeatable on tables, not views, so a hash split is the safe way to keep train and test disjoint.
 
 **Snowflake ML Classification**: This is Snowflake's AutoML offering:
 - Automatically handles categorical encoding (one-hot for category, store_type, etc.)
@@ -110,6 +122,7 @@ PROMPT_4_3 = """Using the STOCKOUT_PREDICTION_MODEL we just trained in RETAIL_AI
 Execute all SQL and show results."""
 
 render_prompt("Prompt 4.3", "Evaluate the Model", PROMPT_4_3)
+render_fallback_sql("Evaluate the model", FB_4_3)
 
 render_explanation("What this prompt does", """
 Model evaluation using both manual SQL calculations and built-in model methods:
@@ -188,6 +201,7 @@ Make the notebook well-documented with markdown cells explaining each section.
 Do NOT run the notebook — just create it. We will run it in the next step."""
 
 render_prompt("Prompt 4.4", "Create ML Pipeline Notebook", PROMPT_4_4)
+render_fallback_sql("Notebook pipeline (Python)", FB_4_4, language="python")
 
 render_explanation("What this prompt does", """
 Creates a **Snowflake Notebook** with a complete ML pipeline that uses three key Snowflake ML services:
@@ -263,6 +277,7 @@ PROMPT_4_5 = """Open the STOCKOUT_ML_NOTEBOOK in Snowsight and run all cells. Af
    LIMIT 10;"""
 
 render_prompt("Prompt 4.5", "Run Notebook & Verify", PROMPT_4_5)
+render_fallback_sql("Verify feature store and registry", FB_4_5)
 
 render_explanation("What this prompt does", """
 Runs the notebook end-to-end and verifies all artifacts were created:
@@ -285,6 +300,13 @@ Runs the notebook end-to-end and verifies all artifacts were created:
 **SQL inference**: The `MODEL(name, version)!PREDICT()` syntax calls the registered model directly from SQL — no Python needed. This is what makes Snowflake ML unique: models trained in Python become SQL functions accessible to any analyst. A merchandiser can run stockout predictions without writing a single line of Python.
 """)
 
+
+render_pro_tip("Explore your ML assets in Snowsight", """
+- **Model Registry**: go to **AI & ML » Models** and select **STOCKOUT_PREDICTOR** to see versions, logged metrics (F1, accuracy), and the callable functions.
+- **Feature Store**: go to **AI & ML » Features** to browse the **PRODUCT** entity and **STOCKOUT_FEATURE_VIEW**, including its refresh status and lineage.
+- **Notebook**: go to **Projects » Notebooks** to reopen **STOCKOUT_ML_NOTEBOOK** and re-run individual cells.
+- **Feature view refreshes**: feature views are dynamic tables - see them under **Transformation » Dynamic tables**.
+""")
 
 render_key_concepts([
     {"term": "Snowflake ML Classification", "definition": "Snowflake's built-in AutoML for binary and multi-class classification. It automatically handles feature encoding, model selection, hyperparameter tuning, and evaluation. Models are stored as first-class Snowflake objects."},

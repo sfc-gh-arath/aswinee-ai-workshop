@@ -1,7 +1,13 @@
 import streamlit as st
-from components import render_session_header, render_technologies_used, render_key_concepts, render_what_you_built
+from components import render_session_header, render_technologies_used, render_key_concepts, render_what_you_built, render_what_you_will_build, render_pro_tip
 
 render_session_header(14, "Free-form Exploration", "4:05 - 4:30 PM", "25 min", "Open-ended experimentation with everything you've built")
+
+render_what_you_will_build([
+    "An extension of your choice: new data, a new model, a new search service, a new agent tool, or a new app page",
+    "Hands-on practice iterating with Cortex Code - prompt, review, refine",
+    "A short list of ideas to take back to your own Snowflake use cases",
+])
 
 render_technologies_used([
     {"name": "Cortex Code", "description": "Use natural language prompts to explore, extend, and experiment with all the objects you've built throughout the day. This is your sandbox time.", "icon": "code"},
@@ -35,6 +41,7 @@ with st.container(border=True):
 
 **Build something new**
 - Create a second Streamlit app focused on store managers (daily sales targets, staffing, local inventory)
+- Add a page to the React app from Session 12 (for example a supplier late-delivery tracker)
 - Build a new Cortex Search service over marketing campaign briefs or vendor contracts
 - Train a model to predict customer lifetime value using transaction history
 - Add a new custom tool to the Agent (e.g., markdown-to-email formatter, promotion recommender)
@@ -56,15 +63,21 @@ Raw Data → Feature Engineering → ML Training → Real-time Scoring
                                                      ↓
 Text Data → Embedding → Search Index → RAG Pipeline
                                           ↓
-Semantic View → Cortex Analyst → Agent → Streamlit App
+Semantic View → Cortex Analyst → Agent → Streamlit + React Apps
 ```
 """)
 
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Tables", "~15")
 col2.metric("AI services", "5+", help="ML model, Search, Analyst, Agent, LLM functions")
-col3.metric("Apps", "1", help="RETAIL_DASHBOARD Streamlit app")
+col3.metric("Apps", "2", help="RETAIL_DASHBOARD Streamlit app + React app on Snowflake App Runtime")
 col4.metric("Roles & policies", "6", help="4 roles + 2 masking policies")
+
+render_pro_tip("See everything you built in one place", """
+- Go to **Catalog » Explorer » RETAIL_AI_DEMO » RETAIL_OPS**. The schema page has a tab per object type - Tables, Views, Dynamic Tables, Semantic Views, Stages, Functions - so you can review the whole lab at a glance.
+- Select **LIVE_STOCKOUT_SCORES** and open **Lineage** to trace the pipeline from raw tables to the ML-scored output.
+- Pin the pages you used most (for example **Agent Studio** or **Cortex Search**) with the pin icon in the navigation menu so they appear under **Shortcuts**.
+""")
 
 render_key_concepts([
     {"term": "Iterative Development with Cortex Code", "definition": "Cortex Code is most powerful when you iterate: try a prompt, see the result, refine, and try again. The objects you've built today form a foundation — the real value comes from extending them to fit your specific use cases."},

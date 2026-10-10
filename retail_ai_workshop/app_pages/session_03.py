@@ -1,5 +1,6 @@
 import streamlit as st
-from components import render_session_header, render_prompt, render_explanation, render_technologies_used, render_key_concepts, render_domain_glossary, render_what_you_built
+from components import render_session_header, render_prompt, render_explanation, render_technologies_used, render_key_concepts, render_domain_glossary, render_what_you_built, render_what_you_will_build, render_fallback_sql, render_pro_tip
+from fallback_sql import FB_3_1, FB_3_2, FB_3_3
 
 render_session_header(
     session_num=3,
@@ -8,6 +9,13 @@ render_session_header(
     duration="25 min",
     building="4 roles, masking policies, and sensitivity tags",
 )
+
+render_what_you_will_build([
+    "4 functional roles (data engineer, data scientist, merchandiser, finance analyst) with least-privilege grants",
+    "A SENSITIVITY_LEVEL tag applied to cost, margin, and discount columns",
+    "Two dynamic masking policies that hide cost data from non-finance roles",
+    "Verification queries proving that the same query returns different results per role",
+])
 
 render_technologies_used([
     {"name": "Role-Based Access Control", "description": "Snowflake's RBAC model uses roles as the primary access control mechanism. Privileges are granted to roles, and roles are granted to users. Supports hierarchical role inheritance.", "icon": "admin_panel_settings"},
@@ -30,6 +38,7 @@ PROMPT_3_1 = """In RETAIL_AI_DEMO, create the following roles and grant structur
 Execute all the SQL and show me a summary of what was granted."""
 
 render_prompt("Prompt 3.1", "RBAC for Retail Operations", PROMPT_3_1)
+render_fallback_sql("Create roles and grants", FB_3_1)
 
 render_explanation("What this prompt does", """
 This creates a realistic **Role-Based Access Control (RBAC)** hierarchy for a retail organization:
@@ -67,17 +76,18 @@ PROMPT_3_2 = """In RETAIL_AI_DEMO.RETAIL_OPS, implement the following governance
    - SALES_TRANSACTIONS.discount_pct -> INTERNAL
 
 3. Create a dynamic masking policy called MASK_COST_DATA (for STRING/TEXT values) that:
-   - Shows full values for RETAIL_DATA_ENGINEER and FINANCE_ANALYST roles
+   - Shows full values for ACCOUNTADMIN, RETAIL_DATA_ENGINEER and FINANCE_ANALYST roles
    - Shows '***MASKED***' for all other roles
 
-4. Create a masking policy called MASK_DOLLAR_VALUES (for NUMERIC values) that:
-   - Shows full values for RETAIL_DATA_ENGINEER and FINANCE_ANALYST roles
+4. Create a masking policy called MASK_DOLLAR_VALUES (for NUMBER(10,2) values) that:
+   - Shows full values for ACCOUNTADMIN, RETAIL_DATA_ENGINEER and FINANCE_ANALYST roles
    - Shows 0.00 for all other roles
    Apply MASK_DOLLAR_VALUES to PRODUCTS.unit_cost and PURCHASE_ORDERS.unit_cost.
 
-Execute all SQL. Then demonstrate the masking by querying PRODUCTS as the current role and show the tag assignments."""
+Execute all SQL. Then demonstrate the masking by querying PRODUCTS as the current role and again as RETAIL_MERCHANDISER, and show the tag assignments."""
 
 render_prompt("Prompt 3.2", "Data Masking and Tagging", PROMPT_3_2)
+render_fallback_sql("Tags and masking policies", FB_3_2)
 
 render_explanation("What this prompt does", """
 This implements two critical governance features:
@@ -102,7 +112,7 @@ ALTER TABLE PRODUCTS MODIFY COLUMN unit_cost
 CREATE OR REPLACE MASKING POLICY MASK_DOLLAR_VALUES AS (val NUMBER)
   RETURNS NUMBER ->
     CASE
-      WHEN CURRENT_ROLE() IN ('RETAIL_DATA_ENGINEER', 'FINANCE_ANALYST') THEN val
+      WHEN CURRENT_ROLE() IN ('ACCOUNTADMIN', 'RETAIL_DATA_ENGINEER', 'FINANCE_ANALYST') THEN val
       ELSE 0.00
     END;
 ```
@@ -122,6 +132,7 @@ PROMPT_3_3 = """Run these governance verification queries in RETAIL_AI_DEMO.RETA
 Show the results."""
 
 render_prompt("Prompt 3.3", "Verify Governance", PROMPT_3_3)
+render_fallback_sql("Verify governance", FB_3_3)
 
 render_explanation("What this prompt does", """
 Verification queries using Snowflake's **INFORMATION_SCHEMA** governance views:
@@ -135,6 +146,13 @@ Verification queries using Snowflake's **INFORMATION_SCHEMA** governance views:
 These views are part of Snowflake's **Horizon** governance framework, which provides centralized visibility into data access, classification, and policy enforcement.
 """)
 
+
+render_pro_tip("See your governance controls in Snowsight", """
+- **Tags & policies**: go to **Governance & security » Tags & policies**. The **Dashboard** shows tag and policy coverage; the **Tags** tab lists `SENSITIVITY_LEVEL` and the columns it is applied to; the **Policies** tab lists `MASK_COST_DATA` and `MASK_DOLLAR_VALUES` and where they are attached.
+- **Column view**: go to **Catalog » Explorer » RETAIL_AI_DEMO » RETAIL_OPS » Tables » PRODUCTS » Columns** to see the tag and masking policy on `UNIT_COST`.
+- **Roles**: go to **Governance & security » Users & roles » Roles** to see the four new roles and the role graph.
+- **Try it**: switch your role to **RETAIL_MERCHANDISER** (top of a worksheet) and query PRODUCTS - `UNIT_COST` shows 0.00.
+""")
 
 render_key_concepts([
     {"term": "RBAC (Role-Based Access Control)", "definition": "Snowflake's security model where all access is mediated through roles. Users are granted roles, roles are granted privileges on objects, and roles can be granted to other roles (hierarchy). ACCOUNTADMIN is the top-level role."},

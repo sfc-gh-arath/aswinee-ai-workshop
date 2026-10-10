@@ -12,7 +12,7 @@ SESSION_PROMPTS = {
     9: ["Prompt 9.1", "Prompt 9.2"],
     10: ["Prompt 10.1", "Prompt 10.2", "Prompt 10.3", "Prompt 10.4"],
     11: ["Prompt 11.1", "Prompt 11.2", "Prompt 11.3", "Prompt 11.4"],
-    12: ["Prompt 12.1", "Prompt 12.2"],
+    12: ["Prompt 12.1", "Prompt 12.2", "Prompt 12.3", "Prompt 12.4"],
     13: ["Prompt 13.1", "Prompt 13.2", "Prompt 13.3"],
 }
 
@@ -59,6 +59,18 @@ def render_prompt(prompt_id: str, title: str, prompt_text: str):
             )
         st.caption("Copy this prompt and paste it into Cortex Code")
         st.code(prompt_text, language="text", wrap_lines=True)
+
+
+def render_fallback_sql(title: str, sql_text: str, language: str = "sql"):
+    label = "SQL" if language == "sql" else "code"
+    with st.expander(f":material/bolt: Optional: Fallback {label} instead of the prompt — {title}", expanded=False):
+        if language == "sql":
+            st.caption("Short on time? Paste this into a Snowsight SQL worksheet and choose Run All instead of using the prompt above.")
+        elif language == "python":
+            st.caption("Short on time? Paste this into a cell of a Snowflake Notebook and run it instead of using the prompt above.")
+        else:
+            st.caption("Short on time? Run these commands in a terminal instead of using the prompt above.")
+        st.code(sql_text, language=language, wrap_lines=True)
 
 
 def render_explanation(title: str, body: str):
@@ -109,6 +121,19 @@ def render_domain_glossary(terms: list[dict]):
     for term in terms:
         with st.expander(f"**{term['term']}**"):
             st.markdown(term["definition"])
+
+
+def render_what_you_will_build(items: list[str]):
+    st.markdown("##### :material/flag: What you will build in this session")
+    for item in items:
+        st.markdown(f"- :blue-badge[Goal] {item}")
+    st.space("small")
+
+
+def render_pro_tip(title: str, body: str):
+    st.markdown(f"##### :material/star: Pro Tip: {title}")
+    with st.container(border=True):
+        st.markdown(body)
 
 
 def render_what_you_built(items: list[str]):

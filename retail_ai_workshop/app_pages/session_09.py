@@ -7,7 +7,11 @@ from components import (
     render_key_concepts,
     render_domain_glossary,
     render_what_you_built,
+    render_what_you_will_build,
+    render_fallback_sql,
+    render_pro_tip,
 )
+from fallback_sql import FB_9_1, FB_9_2
 
 render_session_header(
     session_num=9,
@@ -17,8 +21,15 @@ render_session_header(
     building="Custom embeddings, similarity search, and vector vs keyword comparison",
 )
 
+render_what_you_will_build([
+    "An EMBEDDING_EXAMPLES table of 18 retail phrases embedded with AI_EMBED into VECTOR(FLOAT, 1024)",
+    "A pairwise cosine-similarity matrix showing which phrases the model considers related",
+    "A REVIEW_EMBEDDINGS table and a from-scratch semantic search over customer reviews",
+    "A side-by-side comparison of vector search vs ILIKE keyword search",
+])
+
 render_technologies_used([
-    {"name": "EMBED_TEXT_1024()", "description": "Generates a 1024-dimensional vector embedding for text input using a specified model. The embedding captures the semantic meaning of the text as a point in high-dimensional space.", "icon": "scatter_plot"},
+    {"name": "AI_EMBED()", "description": "Generates a vector embedding for text (or images) using a specified model. With snowflake-arctic-embed-l-v2.0 it returns 1024 dimensions that capture the semantic meaning of the text.", "icon": "scatter_plot"},
     {"name": "VECTOR Data Type", "description": "Snowflake's native vector data type. VECTOR(FLOAT, 1024) stores 1024 floating-point numbers. Supports similarity operations directly in SQL.", "icon": "data_array"},
     {"name": "VECTOR_COSINE_SIMILARITY()", "description": "Computes the cosine similarity between two vectors. Returns a value between -1 and 1, where 1 means identical direction (most similar) and 0 means orthogonal (unrelated).", "icon": "compare"},
 ])
@@ -26,7 +37,7 @@ render_technologies_used([
 
 PROMPT_9_1 = """In RETAIL_AI_DEMO.RETAIL_OPS:
 
-1. Generate vector embeddings for 18 sample texts using SNOWFLAKE.CORTEX.EMBED_TEXT_1024('snowflake-arctic-embed-l-v2.0', text). Include deliberately similar pairs so we can see high cosine similarity scores:
+1. Generate vector embeddings for 18 sample texts using AI_EMBED('snowflake-arctic-embed-l-v2.0', text) and cast them to VECTOR(FLOAT, 1024). Include deliberately similar pairs so we can see high cosine similarity scores:
 
    Sizing feedback (similar pair):
    - 'Running shoes feel too tight around the toe box'
@@ -65,16 +76,17 @@ PROMPT_9_1 = """In RETAIL_AI_DEMO.RETAIL_OPS:
 Execute all SQL and show results."""
 
 render_prompt("Prompt 9.1", "Generate and Compare Embeddings", PROMPT_9_1)
+render_fallback_sql("Generate and compare embeddings", FB_9_1)
 
 render_explanation("What this prompt does", """
 This hands-on exercise builds **intuition for how vector embeddings work**:
 
 **Generating embeddings**:
 ```sql
-SELECT SNOWFLAKE.CORTEX.EMBED_TEXT_1024(
+SELECT AI_EMBED(
   'snowflake-arctic-embed-l-v2.0',
   'Running shoes feel too tight around the toe box'
-) AS embedding;
+)::VECTOR(FLOAT, 1024) AS embedding;
 ```
 This returns a VECTOR(FLOAT, 1024) - an array of 1024 floating-point numbers that encodes the semantic meaning of the text.
 
@@ -95,27 +107,24 @@ ORDER BY similarity DESC
 LIMIT 10;
 ```
 
-**Expected high-similarity pairs** (these are the deliberately paired texts):
-- Sizing pair (~0.95+): "Running shoes feel too tight around the toe box" vs "Athletic sneakers are uncomfortably narrow in the front"
-- Zipper defect pair (~0.93+): "Winter coat zipper broke after two weeks" vs "Outerwear jacket zipper failed within first month..."
-- Summit praise pair (~0.92+): "Love the Summit activewear leggings for yoga" vs "Summit brand yoga pants are my favorite workout gear"
-- Size mismatch pair (~0.94+): "Ordered medium but fits like a small..." vs "Size medium runs way too small..."
-- Basecamp fabric pair (~0.93+): "Basecamp hoodie fabric pills after washing" vs "Basecamp casual hoodie material deteriorates..."
+**Typical results** (measured with snowflake-arctic-embed-l-v2.0; your exact numbers may differ slightly):
+- Size mismatch pair (~0.86): "Ordered medium but fits like a small..." vs "Size medium runs way too small..."
+- Zipper defect pair (~0.74): "Winter coat zipper broke after two weeks" vs "Outerwear jacket zipper failed within first month..."
+- Basecamp fabric pair (~0.73): "Basecamp hoodie fabric pills after washing" vs "Basecamp casual hoodie material deteriorates..."
+- Summit praise pair (~0.73): "Love the Summit activewear leggings for yoga" vs "Summit brand yoga pants are my favorite workout gear"
+- Sizing pair (~0.60): "Running shoes feel too tight around the toe box" vs "Athletic sneakers are uncomfortably narrow in the front"
 
-**Expected moderate-similarity pairs**:
-- Cross-category matches like sizing complaint + sizing feedback (both about fit issues, ~0.6-0.7)
+**Moderate similarity** (~0.4-0.5): cross-pair matches on the same theme, such as the shoe-tightness texts vs the "runs small" complaints.
 
-**Expected low-similarity pairs**:
-- "Loyalty rewards program needs better redemption options" vs "Winter coat zipper broke after two weeks" (~0.3 or lower)
-- Customer service praise vs fabric complaints (completely different topics)
+**Low similarity** (~0.15-0.25): unrelated topics, such as fabric pilling vs a loyalty program, or a broken zipper vs yoga leggings.
 
-This exercise demonstrates that embeddings capture **semantic relationships**, not just lexical overlap. Paraphrased sentences score nearly as high as identical text.
+What matters is the **ranking**, not the absolute number: every deliberately paired text lands in the top 10, and unrelated texts sit at the bottom - even when the pairs share almost no words.
 """)
 
 
 PROMPT_9_2 = """In RETAIL_AI_DEMO.RETAIL_OPS, build a custom semantic search using our embeddings:
 
-1. Generate embeddings for all CUSTOMER_REVIEWS review_text entries and store in a table called REVIEW_EMBEDDINGS (review_id, review_text, embedding VECTOR(FLOAT, 1024))
+1. Generate embeddings for all CUSTOMER_REVIEWS review_text entries with AI_EMBED('snowflake-arctic-embed-l-v2.0', review_text) and store in a table called REVIEW_EMBEDDINGS (review_id, review_text, embedding VECTOR(FLOAT, 1024))
 
 2. Write a semantic search query that takes the user query "What reviews mention poor stitching quality or fabric defects?" and:
    - Generates an embedding for the query text
@@ -127,6 +136,7 @@ PROMPT_9_2 = """In RETAIL_AI_DEMO.RETAIL_OPS, build a custom semantic search usi
 Execute all SQL and show the comparison."""
 
 render_prompt("Prompt 9.2", "Semantic Search with Custom Embeddings", PROMPT_9_2)
+render_fallback_sql("Semantic vs keyword search", FB_9_2)
 
 render_explanation("What this prompt does", """
 A direct comparison between **semantic (vector) search** and **keyword search**:
@@ -134,7 +144,7 @@ A direct comparison between **semantic (vector) search** and **keyword search**:
 **Custom semantic search**:
 ```sql
 WITH query_embedding AS (
-  SELECT SNOWFLAKE.CORTEX.EMBED_TEXT_1024(
+  SELECT AI_EMBED(
     'snowflake-arctic-embed-l-v2.0',
     'What reviews mention poor stitching quality or fabric defects?'
   ) AS qe
@@ -165,6 +175,11 @@ This is precisely why Cortex Search uses **hybrid search** - combining both appr
 **This is the foundation of Session 8**: Cortex Search does all of this automatically. This session shows you what's happening under the hood. Understanding embeddings and similarity helps you debug search quality issues, choose the right embedding model, and design better knowledge bases.
 """)
 
+
+render_pro_tip("Inspect vectors in Snowsight", """
+- Go to **Catalog » Explorer » RETAIL_AI_DEMO » RETAIL_OPS » Tables » REVIEW_EMBEDDINGS » Columns** to see the native `VECTOR(FLOAT, 1024)` column type.
+- In a worksheet, run `SELECT text_content, embedding FROM EMBEDDING_EXAMPLES LIMIT 1;` and select the embedding cell - the side panel shows all 1024 numbers that represent one sentence.
+""")
 
 render_key_concepts([
     {"term": "Vector Embedding", "definition": "A fixed-size array of floating-point numbers that represents text in a high-dimensional space. Semantically similar texts are mapped to nearby points. Created by embedding models trained on large text corpora."},
